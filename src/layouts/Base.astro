@@ -2,9 +2,65 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-const { title, description, image='/images/golghar-hero.jpg', schema=[] } = Astro.props;
+const { title, description, image='/images/golghar-hero.jpg', imageAlt='गोलघर (Golghar) – पटना, बिहार, भारत में मुख्य दृश्य', robots='index,follow', schema=[] } = Astro.props;
 const site = Astro.site;
 const canonical = site ? new URL(Astro.url.pathname, site).toString() : undefined;
 const ogImage = site ? new URL(image, site).toString() : undefined;
 ---
-<!doctype html><html lang="hi-IN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/><title>{title}</title><meta name="description" content={description}/><meta name="robots" content="index,follow"/>{canonical && <link rel="canonical" href={canonical}/>}<meta property="og:type" content="website"/><meta property="og:title" content={title}/><meta property="og:description" content={description}/>{canonical && <meta property="og:url" content={canonical}/>} {ogImage && <meta property="og:image" content={ogImage}/>}<meta property="og:locale" content="hi_IN"/><meta name="twitter:card" content="summary_large_image"/><link rel="icon" href="/favicon/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon/favicon-32.png" sizes="32x32"/><link rel="icon" href="/favicon/favicon-16.png" sizes="16x16"/><link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png"/>{schema.map((item:any)=><script type="application/ld+json" set:html={JSON.stringify(item)} />)}<script is:inline>{`(function(){try{var c=localStorage.getItem('golghar-cookie-consent');if(c){var p=JSON.parse(c);if(p.analytics){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-HXM22WWPKP';document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)};window.gtag=gtag;gtag('js',new Date());gtag('config','G-HXM22WWPKP',{anonymize_ip:true});}}}catch(e){}})();`}</script></head><body><a class="skip" href="#main">मुख्य सामग्री पर जाएँ</a><Header/><main id="main"><slot/></main><Footer/></body></html>
+<!doctype html>
+<html lang="hi-IN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="robots" content={robots} />
+  {canonical && <link rel="canonical" href={canonical} />}
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="गोलघर पटना यात्रा मार्गदर्शिका" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  {canonical && <meta property="og:url" content={canonical} />}
+  {ogImage && <meta property="og:image" content={ogImage} />}
+  <meta property="og:image:alt" content={imageAlt} />
+  <meta property="og:locale" content="hi_IN" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+  <!-- PWA / Icons -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#1d241f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="गोलघर पटना" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="icon" href="/favicon/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon/favicon-32.png" sizes="32x32" />
+  <link rel="icon" href="/favicon/favicon-16.png" sizes="16x16" />
+  <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
+
+  {schema.map((item:any)=><script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
+
+  <!-- GA4 (सहमति-गेटेड) -->
+  <script is:inline>
+    (function(){try{var c=localStorage.getItem('golghar-cookie-consent');if(c){var p=JSON.parse(c);if(p.analytics){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-HXM22WWPKP';document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)};window.gtag=gtag;gtag('js',new Date());gtag('config','G-HXM22WWPKP',{anonymize_ip:true});}}}catch(e){}})();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">मुख्य सामग्री पर जाएँ</a>
+  <Header />
+  <main id="main">
+    <slot />
+  </main>
+  <Footer />
+
+  <!-- PWA Service Worker (उत्पादन में ही) -->
+  <script is:inline>
+    (function(){var local=['localhost','127.0.0.1','0.0.0.0'];if('serviceWorker' in navigator&&local.indexOf(location.hostname)===-1){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}})();
+  </script>
+</body>
+</html>

@@ -2,5 +2,17 @@
 import Logo from './Logo.astro';
 ---
 <header class="sticky top-0 z-50 border-b border-stone-200/70 bg-[#f5efe5]/90 backdrop-blur-xl">
-  <div class="shell flex items-center justify-between py-3"><Logo/><nav class="hidden gap-5 text-sm font-bold md:flex"><a href="/#इतिहास">इतिहास</a><a href="/#यात्रा">यात्रा</a><a href="/#आसपास">आसपास</a><a href="/#faq">FAQ</a></nav><a class="btn btn-primary text-sm" href="https://maps.app.goo.gl/QowA7WfKUocCjCgH8" target="_blank" rel="noopener">मानचित्र खोलें</a></div>
+  <div class="shell flex items-center justify-between py-3">
+    <Logo />
+    <nav class="hidden gap-4 text-sm font-bold lg:flex" aria-label="मुख्य नेविगेशन">
+      <a href="/#इतिहास">इतिहास</a>
+      <a href="/#वास्तुकला">वास्तुकला</a>
+      <a href="/#यात्रा">यात्रा</a>
+      <a href="/#सुविधाएँ">सुविधाएँ</a>
+      <a href="/#कहानियाँ">कहानियाँ</a>
+      <a href="/#आसपास">आसपास</a>
+      <a href="/#faq">FAQ</a>
+    </nav>
+    <a class="btn btn-primary text-sm" href="https://maps.app.goo.gl/QowA7WfKUocCjCgH8" target="_blank" rel="noopener">मानचित्र खोलें</a>
+  </div>
 </header>

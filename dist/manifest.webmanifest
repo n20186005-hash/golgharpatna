@@ -1,0 +1,40 @@
+{
+  "name": "गोलघर पटना यात्रा मार्गदर्शिका",
+  "short_name": "गोलघर पटना",
+  "description": "पटना के ऐतिहासिक गोलघर (Golghar, 1786) के इतिहास, यात्रा समय, मौसम, सुविधाओं और आसपास के दर्शनीय स्थलों की स्वतंत्र हिंदी मार्गदर्शिका।",
+  "id": "https://golgharpatna.com/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5efe5",
+  "theme_color": "#1d241f",
+  "lang": "hi-IN",
+  "categories": ["travel", "education", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

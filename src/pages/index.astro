@@ -1,18 +1,400 @@
 ---
 import Base from '../layouts/Base.astro';
-const title='गोलघर पटना | इतिहास, यात्रा, समय, प्रवेश और स्थानीय मार्गदर्शिका';
-const description='पटना के ऐतिहासिक गोलघर के इतिहास, 145 सीढ़ियों, 29 मीटर ऊँचाई, यात्रा समय, प्रवेश, परिवहन, भोजन, पार्किंग और आसपास के दर्शनीय स्थलों की स्वतंत्र हिंदी मार्गदर्शिका।';
+import Weather from '../components/Weather.astro';
+
+const title = 'गोलघर पटना | इतिहास, यात्रा, समय, प्रवेश और स्थानीय मार्गदर्शिका';
+const description = 'पटना के ऐतिहासिक गोलघर के इतिहास, 145 सीढ़ियों, 29 मीटर ऊँचाई, यात्रा समय, प्रवेश, परिवहन, भोजन, पार्किंग और आसपास के दर्शनीय स्थलों की स्वतंत्र हिंदी मार्गदर्शिका।';
+
 const site = Astro.site;
 const pageUrl = site ? new URL('/', site).toString() : undefined;
-const attraction:any={"@context":"https://schema.org","@type":"TouristAttraction","name":"गोलघर (Golghar)","alternateName":["Gol Ghar","गोल घर"],"description":description,"address":{"@type":"PostalAddress","streetAddress":"Opp. Govt. Girls High School, Ashok Rajpath Road","addressLocality":"Patna","addressRegion":"Bihar","postalCode":"800001","addressCountry":"IN"},"geo":{"@type":"GeoCoordinates","latitude":25.62033697744103,"longitude":85.13687307717692},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"09:00","closes":"18:00"}],"isAccessibleForFree":true,"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.2","reviewCount":"24468"},"sameAs":["https://tourism.bihar.gov.in/hi/destinations/patna/gol-ghar","https://patna.nic.in/tourist-place/gol-ghar/","https://maps.app.goo.gl/QowA7WfKUocCjCgH8"]}; if(pageUrl) attraction.url=pageUrl;
-const faq={"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"गोलघर कब बना था?","acceptedAnswer":{"@type":"Answer","text":"गोलघर का निर्माण 1786 में कैप्टन जॉन गार्स्टिन द्वारा कराया गया था।"}},{"@type":"Question","name":"गोलघर में कितनी सीढ़ियाँ हैं?","acceptedAnswer":{"@type":"Answer","text":"बिहार पर्यटन के अनुसार बाहरी घुमावदार सीढ़ी में 145 सीढ़ियाँ हैं।"}},{"@type":"Question","name":"गोलघर की ऊँचाई कितनी है?","acceptedAnswer":{"@type":"Answer","text":"गोलघर लगभग 29 मीटर ऊँचा है और आधार पर इसकी दीवार लगभग 3.6 मीटर मोटी है।"}},{"@type":"Question","name":"क्या गोलघर का प्रवेश शुल्क है?","acceptedAnswer":{"@type":"Answer","text":"बिहार पर्यटन की पटना सूची में गोलघर के लिए प्रवेश निःशुल्क दिखाया गया है। यात्रा से पहले नवीनतम स्थानीय व्यवस्था की पुष्टि करें।"}}]};
+const SITE_NAME = 'गोलघर पटना यात्रा मार्गदर्शिका';
+const MAPS_URL = 'https://maps.app.goo.gl/QowA7WfKUocCjCgH8';
+const heroImage = site ? new URL('/images/golghar-hero.jpg', site).toString() : '/images/golghar-hero.jpg';
+
+const attraction: any = {
+  "@context": "https://schema.org",
+  "@type": "TouristAttraction",
+  "@id": pageUrl ? pageUrl + '#attraction' : undefined,
+  "name": "गोलघर (Golghar)",
+  "alternateName": ["Gol Ghar", "गोल घर", "Golghar Patna", "पटना का गोलघर"],
+  "description": description,
+  "url": pageUrl,
+  "image": [heroImage],
+  "isAccessibleForFree": true,
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Opp. Govt. Girls High School, Ashok Rajpath Road",
+    "addressLocality": "Patna",
+    "addressRegion": "Bihar",
+    "postalCode": "800001",
+    "addressCountry": "IN"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": 25.62033697744103, "longitude": 85.13687307717692 },
+  "hasMap": MAPS_URL,
+  "openingHoursSpecification": [{
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    "opens": "09:00", "closes": "18:00"
+  }],
+  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.2", "reviewCount": "24468" },
+  "sameAs": [
+    "https://tourism.bihar.gov.in/hi/destinations/patna/gol-ghar",
+    "https://patna.nic.in/tourist-place/gol-ghar/",
+    MAPS_URL
+  ]
+};
+
+// साइट-स्तरीय E-E-A-T नोड्स
+const org = pageUrl ? {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": pageUrl + '#organization',
+  "name": SITE_NAME,
+  "url": pageUrl,
+  "logo": site ? new URL('/favicon/favicon.svg', site).toString() : undefined
+} : undefined;
+
+const website = pageUrl ? {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": pageUrl + '#website',
+  "url": pageUrl,
+  "name": SITE_NAME,
+  "inLanguage": "hi-IN",
+  "publisher": { "@id": pageUrl + '#organization' }
+} : undefined;
+
+const webpage = pageUrl ? {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": pageUrl + '#webpage',
+  "url": pageUrl,
+  "name": title,
+  "description": description,
+  "inLanguage": "hi-IN",
+  "datePublished": "2026-09-03",
+  "dateModified": "2026-09-03",
+  "isPartOf": { "@id": pageUrl + '#website' },
+  "about": { "@id": pageUrl + '#attraction' },
+  "primaryImageOfPage": heroImage
+} : undefined;
+
+const faq = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question", "name": "गोलघर कब और किसने बनवाया था?",
+      "acceptedAnswer": { "@type": "Answer", "text": "गोलघर का निर्माण 1786 में पूरा हुआ था; यह ब्रिटिश ईस्ट इंडिया कंपनी के इंजीनियर कैप्टन जॉन गार्स्टिन (बंगाल इंजीनियर्स) के निर्देशन में बनाया गया था।" }
+    },
+    {
+      "@type": "Question", "name": "गोलघर क्यों बनाया गया था?",
+      "acceptedAnswer": { "@type": "Answer", "text": "गोलघर सेना व प्रशासन के लिए अनाज भंडारण हेतु बनाया गया था। आधार पर खुदे अभिलेख के अनुसार यह कई अनाजगृहों की योजना का पहला भवन था, जो अकाल की रोकथाम की समग्र योजना का हिस्सा था; बाद के भवन कभी नहीं बन सके।" }
+    },
+    {
+      "@type": "Question", "name": "गोलघर में कितनी सीढ़ियाँ हैं?",
+      "acceptedAnswer": { "@type": "Answer", "text": "बिहार पर्यटन के अनुसार बाहरी घुमावदार सीढ़ी में 145 सीढ़ियाँ हैं। दोनों ओर की सीढ़ियाँ अनाज ढोने वाले श्रमिकों के आने-जाने के लिए बनाई गई थीं।" }
+    },
+    {
+      "@type": "Question", "name": "गोलघर की ऊँचाई और दीवारें कितनी हैं?",
+      "acceptedAnswer": { "@type": "Answer", "text": "गोलघर लगभग 29 मीटर ऊँचा है और आधार पर इसकी दीवार लगभग 3.6 मीटर मोटी है। यह स्तंभ-रहित, खोखले गुंबद जैसी संरचना है।" }
+    },
+    {
+      "@type": "Question", "name": "क्या गोलघर का प्रवेश शुल्क है?",
+      "acceptedAnswer": { "@type": "Answer", "text": "बिहार पर्यटन की पटना सूची में गोलघर के लिए प्रवेश निःशुल्क दिखाया गया है। यात्रा से पहले नवीनतम स्थानीय व्यवस्था की पुष्टि करें।" }
+    },
+    {
+      "@type": "Question", "name": "क्या ऊपर तक जाना हमेशा संभव है?",
+      "acceptedAnswer": { "@type": "Answer", "text": "सीढ़ियों या ऊपरी भाग की पहुँच सुरक्षा, रखरखाव या स्थानीय निर्देश के कारण बदल सकती है। स्थल पर नवीनतम सूचना देखें।" }
+    },
+    {
+      "@type": "Question", "name": "क्या कैमरा और इलेक्ट्रॉनिक गैजेट ले जा सकते हैं?",
+      "acceptedAnswer": { "@type": "Answer", "text": "बिहार पर्यटन की आधिकारिक जानकारी में मोबाइल, कैमरा और इलेक्ट्रॉनिक गैजेट्स की अनुमति बताई गई है; स्थानीय सुरक्षा निर्देश लागू रहेंगे।" }
+    },
+    {
+      "@type": "Question", "name": "क्या पास में खाने, पार्किंग या एटीएम की सुविधा है?",
+      "acceptedAnswer": { "@type": "Answer", "text": "आस-पास कैफे-रेस्तरां, सड़क पार्किंग, दुकानें और एटीएम जैसी सामान्य सुविधाएँ मिल सकती हैं। यह एक गैर-लाभकारी सूचना साइट है, इसलिए हम किसी विशेष प्रतिष्ठान की अनुशंसा नहीं करते।" }
+    }
+  ]
+};
 ---
-<Base {title} {description} schema={[attraction,faq]}>
-<section class="relative overflow-hidden bg-[#201f1a] text-white"><div class="absolute inset-0 opacity-35"><img src="/images/golghar-hero.jpg" alt="पटना का गोलघर" class="photo" loading="eager"/></div><div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent"></div><div class="shell relative grid min-h-[680px] items-end gap-10 py-20 lg:grid-cols-[1.05fr_.75fr]"><div><p class="eyebrow !text-[#e7c785]">पटना · बिहार</p><h1 class="mt-4 max-w-4xl text-6xl font-black leading-[.95] tracking-[-.06em] md:text-8xl">गोलघर</h1><p class="mt-5 max-w-2xl text-xl text-stone-200">1786 का विशाल, स्तंभ-रहित अनाजघर—अपनी अर्धगोलाकार देह और बाहरी घुमावदार सीढ़ियों के कारण पटना की सबसे पहचानने योग्य ऐतिहासिक आकृतियों में से एक।</p><div class="mt-8 flex flex-wrap gap-3"><a href="#यात्रा" class="btn bg-[#c69b54] text-[#1d241f]">यात्रा की योजना</a><a href="https://tourism.bihar.gov.in/hi/destinations/patna/gol-ghar" target="_blank" rel="noopener" class="btn btn-ghost">बिहार पर्यटन</a></div></div><div class="grid grid-cols-2 gap-3"><div class="rounded-3xl bg-white/10 p-5 backdrop-blur"><strong class="text-3xl">1786</strong><span class="block text-sm text-stone-300">निर्माण वर्ष</span></div><div class="rounded-3xl bg-white/10 p-5 backdrop-blur"><strong class="text-3xl">29 मी.</strong><span class="block text-sm text-stone-300">लगभग ऊँचाई</span></div><div class="rounded-3xl bg-white/10 p-5 backdrop-blur"><strong class="text-3xl">145</strong><span class="block text-sm text-stone-300">घुमावदार सीढ़ियाँ</span></div><div class="rounded-3xl bg-white/10 p-5 backdrop-blur"><strong class="text-3xl">3.6 मी.</strong><span class="block text-sm text-stone-300">आधार की दीवार</span></div></div></div></section>
-<section id="इतिहास" class="section"><div class="shell grid gap-12 lg:grid-cols-2"><div><p class="eyebrow">वास्तु और इतिहास</p><h2 class="section-title mt-3">एक अनाजघर जो पटना का प्रतीक बन गया</h2><p class="mt-6 text-lg text-stone-700">1770 के अकाल के बाद खाद्यान्न भंडारण की योजना के हिस्से के रूप में ब्रिटिश इंजीनियर कैप्टन जॉन गार्स्टिन ने गोलघर बनवाया। बिहार पर्यटन इसे 1786 में निर्मित विशाल स्तंभ-रहित संरचना बताता है। इसकी बाहरी दोहरी घुमावदार सीढ़ियाँ ऊपर तक जाती हैं और मूलतः अनाज ढोने वाले श्रमिकों के आवागमन के लिए बनाई गई थीं।</p><p class="mt-4 text-stone-600">यह स्थल गांधी मैदान के पश्चिम में, अशोक राजपथ क्षेत्र के पास है और गंगा नदी के निकट स्थित है—इसी भूगोल को पृष्ठ शीर्षक, संरचित डेटा और आधिकारिक संदर्भ लिंक में स्पष्ट रखा गया है।</p></div><div class="photo-card h-[420px]"><img src="/images/golghar-stairs.jpg" alt="गोलघर की बाहरी घुमावदार सीढ़ियाँ" class="photo" loading="lazy"/></div></div></section>
-<section id="यात्रा" class="section bg-[#e9dfd0]"><div class="shell"><p class="eyebrow">यात्रा जानकारी</p><h2 class="section-title mt-3">आने से पहले जरूरी बातें</h2><div class="grid-auto mt-8"><article class="card p-6"><h3 class="text-xl font-black">समय</h3><p class="mt-2 muted">बिहार पर्यटन की पटना सूची में 9:00–18:00 दिया गया है। स्थल पर संचालन/मरम्मत के कारण पहुँच बदल सकती है।</p></article><article class="card p-6"><h3 class="text-xl font-black">प्रवेश / शुल्क</h3><p class="mt-2 muted">बिहार पर्यटन सूची के अनुसार प्रवेश निःशुल्क है। किसी विशेष कार्यक्रम या सुविधा के शुल्क अलग हो सकते हैं।</p></article><article class="card p-6"><h3 class="text-xl font-black">सर्वोत्तम समय</h3><p class="mt-2 muted">सितंबर से अप्रैल अपेक्षाकृत आरामदायक। गर्मियों में सुबह या देर दोपहर बेहतर रहती है।</p></article><article class="card p-6"><h3 class="text-xl font-black">रुकने का समय</h3><p class="mt-2 muted">सामान्यतः 45–90 मिनट पर्याप्त हैं; फोटोग्राफी और आसपास पैदल घूमने पर अधिक समय रखें।</p></article><article class="card p-6"><h3 class="text-xl font-black">पार्किंग</h3><p class="mt-2 muted">स्थल के आसपास सड़क और सार्वजनिक पार्किंग सीमित हो सकती है। व्यस्त समय में टैक्सी/ऑटो अधिक सरल विकल्प है।</p></article><article class="card p-6"><h3 class="text-xl font-black">पता</h3><p class="mt-2 muted">Opp. Govt. Girls High School, Ashok Rajpath Rd, Patna, Bihar 800001 · J4CQ+4Q</p></article></div></div></section>
-<section class="section"><div class="shell grid gap-10 lg:grid-cols-[.8fr_1.2fr]"><div><p class="eyebrow">विस्तृत परिवहन</p><h2 class="section-title mt-3">पटना शहर से कैसे पहुँचें</h2><div class="mt-7 space-y-5 text-stone-700"><p><strong>रेल:</strong> पटना जंक्शन से ऑटो-रिक्शा, टैक्सी या शहर की बस से गांधी मैदान/अशोक राजपथ दिशा में जाएँ।</p><p><strong>हवाई अड्डा:</strong> जयप्रकाश नारायण अंतरराष्ट्रीय हवाई अड्डे से सड़क मार्ग सबसे सीधा विकल्प है; यातायात के लिए अतिरिक्त समय रखें।</p><p><strong>स्थानीय परिवहन:</strong> बिहार पर्यटन केंद्रीय पटना से ऑटो-रिक्शा, सिटी बस और टैक्सी को प्रमुख विकल्प बताता है।</p><p><strong>पैदल:</strong> गांधी मैदान क्षेत्र में हों तो गोलघर को आसपास के संग्रहालयों और नदी क्षेत्र के साथ एक पैदल सर्किट में जोड़ा जा सकता है।</p></div></div><div class="card p-2"><iframe class="map-frame" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6398.742061097016!2d85.13687307717692!3d25.62033697744103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed58504978e8f3%3A0x18cd15ae7d0e6cd!2sGolghar!5e1!3m2!1shi!2sin!4v1788345339487!5m2!1shi!2sin" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" title="गोलघर पटना का Google मानचित्र"></iframe></div></div></section>
-<section id="आसपास" class="section bg-[#1d241f] text-white"><div class="shell"><p class="eyebrow !text-[#e7c785]">आसपास</p><h2 class="section-title mt-3">गोलघर के बाद क्या देखें और क्या खाएँ</h2><div class="mt-8 grid gap-6 lg:grid-cols-2"><div class="rounded-3xl bg-white/7 p-7"><h3 class="text-2xl font-black">आसपास के दर्शनीय स्थल</h3><ul class="mt-4 space-y-3 text-stone-300"><li><strong class="text-white">गांधी मैदान</strong> — केंद्रीय पटना का ऐतिहासिक खुला मैदान।</li><li><strong class="text-white">बिहार संग्रहालय</strong> — बिहार की कला, पुरातत्व और सांस्कृतिक इतिहास के लिए प्रमुख संग्रहालय।</li><li><strong class="text-white">बुद्ध स्मृति पार्क</strong> — पटना जंक्शन के पास आधुनिक बौद्ध स्मृति परिसर।</li><li><strong class="text-white">गांधी घाट</strong> — गंगा किनारे का प्रमुख घाट; शाम के समय लोकप्रिय।</li></ul></div><div class="rounded-3xl bg-white/7 p-7"><h3 class="text-2xl font-black">स्थानीय भोजन</h3><p class="mt-4 text-stone-300">यह सूची स्थानीय स्वाद समझने के लिए है, किसी खास दुकान का व्यावसायिक प्रचार नहीं।</p><div class="mt-5 grid grid-cols-2 gap-3"><span class="rounded-2xl bg-white/8 p-4">लिट्टी–चोखा</span><span class="rounded-2xl bg-white/8 p-4">सत्तू शरबत</span><span class="rounded-2xl bg-white/8 p-4">खाजा</span><span class="rounded-2xl bg-white/8 p-4">दही–चूड़ा</span></div></div></div></div></section>
-<section class="section"><div class="shell"><div class="grid gap-5 md:grid-cols-3"><div class="photo-card h-72"><img src="/images/golghar-wide.jpg" alt="पटना में गोलघर का बाहरी दृश्य" class="photo" loading="lazy"/></div><div class="card p-7"><p class="eyebrow">भौगोलिक पहचान</p><h2 class="mt-3 text-3xl font-black">गंगा के पास, गांधी मैदान के पश्चिम</h2><p class="mt-4 muted">Google Maps और आधिकारिक पर्यटन विवरण दोनों गोलघर को मध्य पटना के गांधी मैदान–अशोक राजपथ क्षेत्र से जोड़ते हैं।</p></div><div class="card p-7"><p class="eyebrow">फोटोग्राफी</p><h2 class="mt-3 text-3xl font-black">वक्रता और सीढ़ियों पर ध्यान दें</h2><p class="mt-4 muted">अर्धगोलाकार दीवार और बाहरी सीढ़ी गोलघर की सबसे विशिष्ट दृश्य पहचान हैं।</p></div></div></div></section>
-<section id="faq" class="section bg-[#efe7db]"><div class="shell max-w-4xl"><p class="eyebrow">FAQ</p><h2 class="section-title mt-3">अक्सर पूछे जाने वाले सवाल</h2><div class="mt-8 space-y-4"><details class="card p-6" open><summary class="cursor-pointer font-black">गोलघर कब बना?</summary><p class="mt-3 muted">1786 में, कैप्टन जॉन गार्स्टिन द्वारा।</p></details><details class="card p-6"><summary class="cursor-pointer font-black">क्या ऊपर तक जाना हमेशा संभव है?</summary><p class="mt-3 muted">सीढ़ियों या ऊपरी भाग की पहुँच सुरक्षा, रखरखाव या स्थानीय निर्देश के कारण बदल सकती है। स्थल पर नवीनतम सूचना देखें।</p></details><details class="card p-6"><summary class="cursor-pointer font-black">क्या कैमरा ले जा सकते हैं?</summary><p class="mt-3 muted">बिहार पर्यटन की आधिकारिक जानकारी में मोबाइल, कैमरा और इलेक्ट्रॉनिक गैजेट्स की अनुमति बताई गई है; स्थानीय सुरक्षा निर्देश लागू रहेंगे।</p></details><details class="card p-6"><summary class="cursor-pointer font-black">आधिकारिक जानकारी कहाँ देखें?</summary><p class="mt-3 muted"><a class="underline" href="https://tourism.bihar.gov.in/hi/destinations/patna/gol-ghar" target="_blank" rel="noopener">बिहार पर्यटन</a> और <a class="underline" href="https://patna.nic.in/tourist-place/gol-ghar/" target="_blank" rel="noopener">पटना जिला प्रशासन</a> प्राथमिक संदर्भ हैं।</p></details></div></div></section>
+<Base {title} {description} schema={[attraction, org, website, webpage, faq].filter(Boolean)}>
+
+  <!-- ============ Hero ============ -->
+  <section class="relative overflow-hidden bg-[#201f1a] text-white">
+    <div class="absolute inset-0 opacity-35">
+      <img src="/images/golghar-hero.jpg" alt="गोलघर (Golghar) का मुख्य दृश्य – पटना, बिहार, भारत" class="photo" loading="eager" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent"></div>
+    <div class="shell relative grid min-h-[680px] items-end gap-10 py-20 lg:grid-cols-[1.05fr_.75fr]">
+      <div>
+        <h1 class="mt-4 max-w-4xl text-6xl font-black leading-[.95] tracking-[-.06em] md:text-8xl">गोलघर<span class="mt-2 block text-3xl font-extrabold tracking-tight text-[#e7c785] md:text-5xl">पटना · बिहार · भारत</span></h1>
+        <p class="mt-5 max-w-2xl text-xl text-stone-200">1786 का विशाल, स्तंभ-रहित अनाजघर—अपनी अर्धगोलाकार देह और बाहरी घुमावदार सीढ़ियों के कारण पटना की सबसे पहचानने योग्य ऐतिहासिक आकृतियों में से एक।</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#यात्रा" class="btn bg-[#c69b54] text-[#1d241f]">यात्रा की योजना</a>
+          <a href="https://tourism.bihar.gov.in/hi/destinations/patna/gol-ghar" target="_blank" rel="noopener" class="btn btn-ghost">बिहार पर्यटन</a>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-3xl bg-white/10 p-5 backdrop-blur"><strong class="text-3xl">1786</strong><span class="block text-sm text-stone-300">निर्माण वर्ष</span></div>
+        <div class="rounded-3xl bg-white/10 p-5 backdrop-blur"><strong class="text-3xl">29 मी.</strong><span class="block text-sm text-stone-300">लगभग ऊँचाई</span></div>
+        <div class="rounded-3xl bg-white/10 p-5 backdrop-blur"><strong class="text-3xl">145</strong><span class="block text-sm text-stone-300">घुमावदार सीढ़ियाँ</span></div>
+        <div class="rounded-3xl bg-white/10 p-5 backdrop-blur"><strong class="text-3xl">3.6 मी.</strong><span class="block text-sm text-stone-300">आधार की दीवार</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ इतिहास ============ -->
+  <section id="इतिहास" class="section">
+    <div class="shell grid gap-12 lg:grid-cols-2">
+      <div>
+        <p class="eyebrow">वास्तु और इतिहास</p>
+        <h2 class="section-title mt-3">एक अनाजघर जो पटना का प्रतीक बन गया</h2>
+        <p class="mt-6 text-lg text-stone-700">1770 के अकाल के बाद खाद्यान्न भंडारण की योजना के हिस्से के रूप में ब्रिटिश इंजीनियर कैप्टन जॉन गार्स्टिन ने गोलघर बनवाया। बिहार पर्यटन इसे 1786 में निर्मित विशाल स्तंभ-रहित संरचना बताता है। इसकी बाहरी दोहरी घुमावदार सीढ़ियाँ ऊपर तक जाती हैं और मूलतः अनाज ढोने वाले श्रमिकों के आवागमन के लिए बनाई गई थीं।</p>
+        <p class="mt-4 text-stone-600">यह स्थल गांधी मैदान के पश्चिम में, अशोक राजपथ क्षेत्र के पास है और गंगा नदी के निकट स्थित है—इसी भूगोल को पृष्ठ शीर्षक, संरचित डेटा और आधिकारिक संदर्भ लिंक में स्पष्ट रखा गया है।</p>
+        <p class="mt-4 text-stone-600">आधार पर खुदे अभिलेख के अनुसार यह भवन ऐसे कई विशाल अनाजगृहों की शृंखला का <strong>पहला भवन</strong> था—यह योजना "इन प्रांतों में अकाल की स्थायी रोकथाम" के व्यापक उद्देश्य से जुड़ी थी। बाद के अनाजगृह कभी नहीं बन सके, इसलिए आज यह विशाल गुंबद अपनी तरह का एकमात्र खड़ा उदाहरण है। निर्माण 20 जुलाई 1786 को पूरा हुआ माना जाता है।</p>
+        <div class="mt-8 space-y-5">
+          <div class="flex gap-4">
+            <span class="mt-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1d241f] font-black text-[#e7c785]">1</span>
+            <div><strong class="block">अकाल का सबक (1770 के दशक की पृष्ठभूमि)</strong><p class="muted">क्षेत्र में भीषण अकाल के बाद खाद्यान्न भंडारण की आवश्यकता महसूस की गई; गोलघर उसी सोच का ठोस नतीजा था।</p></div>
+          </div>
+          <div class="flex gap-4">
+            <span class="mt-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1d241f] font-black text-[#e7c785]">2</span>
+            <div><strong class="block">1786 — कैप्टन जॉन गार्स्टिन</strong><p class="muted">ईस्ट इंडिया कंपनी के बंगाल इंजीनियर्स के इंजीनियर गार्स्टिन ने इसका डिज़ाइन व निर्माण कराया; बीहाइव (छत्ते) जैसी आकृति वाला यह विशाल गोदाम बना।</p></div>
+          </div>
+          <div class="flex gap-4">
+            <span class="mt-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1d241f] font-black text-[#e7c785]">3</span>
+            <div><strong class="block">"श्रृंखला का पहला" — बाकी कभी नहीं बने</strong><p class="muted">मूल योजना में ऐसे कई गोलघर थे, पर केवल यही एक बन सका। गोलघर आज उस योजना का अकेला स्मारक है।</p></div>
+          </div>
+          <div class="flex gap-4">
+            <span class="mt-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1d241f] font-black text-[#e7c785]">4</span>
+            <div><strong class="block">आज — पटना का सांस्कृतिक चिह्न</strong><p class="muted">समय-समय पर संरक्षण/सुधार कार्य होते रहे (2002 व 2018 की रिपोर्टें)। आज यह बिहार सरकार के अधीन एक प्रमुख पर्यटन स्थल है।</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-6">
+        <div class="photo-card h-[420px]">
+          <img src="/images/golghar-stairs.jpg" alt="गोलघर (Golghar) की बाहरी घुमावदार सीढ़ियाँ – पटना, बिहार, भारत" class="photo" loading="lazy" />
+        </div>
+        <div class="rounded-3xl border border-[#8f4e36]/20 bg-[#fffaf2] p-6 text-sm text-stone-600">
+          <strong class="block text-[#1d241f]">एक नज़र में</strong>
+          गोलघर का भीतरी भाग स्तंभ-रहित खोखला गुंबद है; पर्यटक मुख्यतः बाहरी सीढ़ियों से ऊपर चढ़कर पटना नगर और गंगा का विहंगम दृश्य देखते हैं। सीढ़ियों/भीतरी भाग तक पहुँच स्थानीय व्यवस्था के अनुसार बदल सकती है।
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ वास्तुकला ============ -->
+  <section id="वास्तुकला" class="section bg-[#e9dfd0]">
+    <div class="shell">
+      <p class="eyebrow">वास्तुकला</p>
+      <h2 class="section-title mt-3 max-w-3xl">गुंबद, सीढ़ियाँ और इंजीनियरिंग के किस्से</h2>
+      <p class="mt-5 max-w-3xl text-lg text-stone-700">गोलघर कोई साधारण इमारत नहीं—यह 18वीं सदी की एक प्रयोगात्मक भंडारण परियोजना थी। बीहाइव/स्तूप जैसी इसकी आकृति में न तो खंभे हैं और न ही अंदर कोई मंज़िल; दीवारें ही पूरा भार उठाती हैं।</p>
+      <div class="mt-8 grid-auto">
+        <article class="card p-6"><h3 class="text-xl font-black">स्तंभ-रहित गुंबद</h3><p class="mt-2 muted">भीतर कोई खंभा नहीं—विशाल गुंबद अपना भार दीवारों के ज़रिए नींव तक पहुँचाता है। यही इसकी सबसे बड़ी इंजीनियरिंग विशेषता है।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">आधार मोटा, ऊपर पतला</h3><p class="mt-2 muted">नींव पर दीवार लगभग 3.6 मीटर मोटी है और ऊपर जाते-जाती पतली होती जाती है—भार को धीरे-धीरे फैलाने के लिए।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">दोहरी बाहरी सीढ़ी</h3><p class="mt-2 muted">बाहर की ओर दो घुमावदार सीढ़ियाँ (145 सीढ़ियाँ) बनी हैं—एक से चढ़ाई, दूसरी से उतराई।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">ऊपर से भराई</h3><p class="mt-2 muted">अनाज ऊपर के छिद्र/द्वार से डाला जाना था; मज़दूर सीढ़ी से बोरियाँ चढ़ाकर ऊपर से खाली करते थे।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">नीचे से निकासी</h3><p class="mt-2 muted">भूतल पर बने छोटे द्वार से अनाज बाहर निकालने की योजना थी—ठीक अनाज भंडारण की ज़रूरत के उलट।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">लगभग 29 मीटर ऊँचाई</h3><p class="mt-2 muted">चार-पाँच मंज़िल जितनी यह ऊँचाई अपने ज़माने में शहर पर नज़र रखने का सबसे अच्छा ठिकाना थी।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">व्यास का अनुमान</h3><p class="mt-2 muted">कुछ स्रोतों के अनुसार गोलाकार नींव का व्यास लगभग 32–35 मीटर बताया जाता है (स्रोतों में थोड़ा अंतर है)।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">खोखला भीतरी भाग</h3><p class="mt-2 muted">अंदर विशाल खाली स्थान है; कई पर्यटक विवरणों में इसकी गूँज (इको) का ज़िक्र मिलता है।</p></article>
+      </div>
+      <p class="mt-6 rounded-3xl border border-[#236d72]/25 bg-[#236d72]/8 p-5 text-sm text-stone-700">नोट: ये आँकड़े सार्वजनिक स्रोतों पर आधारित हैं; कुछ मापों में स्रोतों के बीच मामूली अंतर हो सकता है। ऊपरी सीढ़ियों और भीतरी भाग की पहुँच सुरक्षा/रखरखाव के कारण बदल सकती है।</p>
+    </div>
+  </section>
+
+  <!-- ============ यात्रा जानकारी ============ -->
+  <section id="यात्रा" class="section">
+    <div class="shell">
+      <p class="eyebrow">यात्रा जानकारी</p>
+      <h2 class="section-title mt-3">आने से पहले जरूरी बातें</h2>
+      <div class="grid-auto mt-8">
+        <article class="card p-6"><h3 class="text-xl font-black">समय</h3><p class="mt-2 muted">बिहार पर्यटन की पटना सूची में 9:00–18:00 दिया गया है। स्थल पर संचालन/मरम्मत के कारण पहुँच बदल सकती है।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">प्रवेश / शुल्क</h3><p class="mt-2 muted">बिहार पर्यटन सूची के अनुसार प्रवेश निःशुल्क है। किसी विशेष कार्यक्रम या सुविधा के शुल्क अलग हो सकते हैं।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">सर्वोत्तम समय</h3><p class="mt-2 muted">सितंबर से अप्रैल अपेक्षाकृत आरामदायक। गर्मियों में सुबह या देर दोपहर बेहतर रहती है।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">रुकने का समय</h3><p class="mt-2 muted">सामान्यतः 45–90 मिनट पर्याप्त हैं; फोटोग्राफी और आसपास पैदल घूमने पर अधिक समय रखें।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">पार्किंग</h3><p class="mt-2 muted">स्थल के आसपास सड़क और सार्वजनिक पार्किंग सीमित हो सकती है। व्यस्त समय में टैक्सी/ऑटो अधिक सरल विकल्प है।</p></article>
+        <article class="card p-6"><h3 class="text-xl font-black">पता</h3><p class="mt-2 muted">Opp. Govt. Girls High School, Ashok Rajpath Rd, Patna, Bihar 800001 · J4CQ+4Q</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ सुविधाएँ ============ -->
+  <section id="सुविधाएँ" class="section bg-[#1d241f] text-white">
+    <div class="shell">
+      <p class="eyebrow !text-[#e7c785]">आसपास की सुविधाएँ</p>
+      <h2 class="section-title mt-3">शौचालय, पार्किंग, खाना और बाकी ज़रूरी बातें</h2>
+      <p class="mt-5 max-w-3xl text-stone-300">यह एक गैर-लाभकारी सूचना साइट है—हम किसी दुकान, होटल या ब्रांड की अनुशंसा नहीं करते। नीचे केवल सामान्य <strong class="text-white">सुविधा के प्रकार</strong> बताए गए हैं, ताकि आप योजना बना सकें। स्थान और उपलब्धता बदलती रहती है, इसलिए स्थानीय जानकारी सत्यापित करें।</p>
+      <div class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <article class="rounded-3xl bg-white/7 p-6"><h3 class="text-lg font-black">शौचालय / स्वच्छता</h3><p class="mt-2 text-sm text-stone-300">स्मारक के आस-पास सार्वजनिक शौचालय सीमित हो सकते हैं। पास के पार्क/संग्रहालय/शॉपिंग क्षेत्र में जाने से पहले योजना बनाएँ; अपना टिश्यू और पानी रखें।</p></article>
+        <article class="rounded-3xl bg-white/7 p-6"><h3 class="text-lg font-black">पार्किंग</h3><p class="mt-2 text-sm text-stone-300">समर्पित बड़ी पार्किंग नहीं है; आस-पास सड़क किनारे सीमित पार्किंग मिल सकती है। अशोक राजपथ/गांधी मैदान क्षेत्र से ऑटो-रिक्शा या टैक्सी लेना अधिक आसान रहता है।</p></article>
+        <article class="rounded-3xl bg-white/7 p-6"><h3 class="text-lg font-black">खाना / पेय</h3><p class="mt-2 text-sm text-stone-300">आस-पास कैफे, रेस्तरां, मिठाई की दुकानें और स्ट्रीट-फूड ठेले मिलते हैं (शाकाहारी व मांसाहारी दोनों)। स्थानीय व्यंजन—लिट्टी-चोखा, सत्तू शरबत, खाजा, दही-चूड़ा—आज़मा सकते हैं।</p></article>
+        <article class="rounded-3xl bg-white/7 p-6"><h3 class="text-lg font-black">आवास / होटल</h3><p class="mt-2 text-sm text-stone-300">शहर में बजट गेस्टहाउस से लेकर मिड-रेंज व अपर-रेंज होटल तक विकल्प हैं; अधिकतर गांधी मैदान, रेलवे स्टेशन व हवाई अड्डे के आस-पास केंद्रित हैं।</p></article>
+        <article class="rounded-3xl bg-white/7 p-6"><h3 class="text-lg font-black">किराना / सुपरमार्केट</h3><p class="mt-2 text-sm text-stone-300">पानी, नाश्ता या छोटी ज़रूरतों के लिए आस-पास किराना दुकानें, सुविधा स्टोर और रिटेल दुकानें मिल सकती हैं।</p></article>
+        <article class="rounded-3xl bg-white/7 p-6"><h3 class="text-lg font-black">ईंधन / EV चार्जिंग</h3><p class="mt-2 text-sm text-stone-300">अशोक राजपथ और मुख्य मार्गों पर पेट्रोल पंप व इलेक्ट्रिक वाहन चार्जिंग स्टेशन उपलब्ध हैं; निजी वाहन से आएँ तो पहले से प्लान करें।</p></article>
+        <article class="rounded-3xl bg-white/7 p-6"><h3 class="text-lg font-black">एटीएम / बैंक / नकदी</h3><p class="mt-2 text-sm text-stone-300">क्षेत्र में बैंक व एटीएम मौजूद हैं। डिजिटल भुगतान आम है, पर छोटे ठेलों के लिए थोड़ी नकदी रखना उपयोगी रहता है।</p></article>
+        <article class="rounded-3xl bg-white/7 p-6"><h3 class="text-lg font-black">चिकित्सा / फार्मेसी</h3><p class="mt-2 text-sm text-stone-300">नज़दीकी अस्पताल व केमिस्ट/दवा दुकानें आपात स्थिति में काम आती हैं। ज़रूरी दवाइयाँ अपने साथ रखें।</p></article>
+      </div>
+      <p class="mt-6 inline-flex items-center gap-2 rounded-full border border-[#e7c785]/40 px-4 py-2 text-sm text-stone-300"><span class="font-black text-[#e7c785]">✓</span> कोई विज्ञापन नहीं — केवल सामान्य प्रकार की सूचना</p>
+    </div>
+  </section>
+
+  <!-- ============ परिवहन ============ -->
+  <section class="section">
+    <div class="shell grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
+      <div>
+        <p class="eyebrow">विस्तृत परिवहन</p>
+        <h2 class="section-title mt-3">पटना शहर से कैसे पहुँचें</h2>
+        <div class="mt-7 space-y-5 text-stone-700">
+          <p><strong>रेल:</strong> पटना जंक्शन से ऑटो-रिक्शा, टैक्सी या शहर की बस से गांधी मैदान/अशोक राजपथ दिशा में जाएँ।</p>
+          <p><strong>हवाई अड्डा:</strong> जयप्रकाश नारायण अंतरराष्ट्रीय हवाई अड्डे से सड़क मार्ग सबसे सीधा विकल्प है; यातायात के लिए अतिरिक्त समय रखें।</p>
+          <p><strong>स्थानीय परिवहन:</strong> बिहार पर्यटन केंद्रीय पटना से ऑटो-रिक्शा, सिटी बस और टैक्सी को प्रमुख विकल्प बताता है।</p>
+          <p><strong>पैदल:</strong> गांधी मैदान क्षेत्र में हों तो गोलघर को आसपास के संग्रहालयों और नदी क्षेत्र के साथ एक पैदल सर्किट में जोड़ा जा सकता है।</p>
+        </div>
+      </div>
+      <div class="card p-2">
+        <iframe class="map-frame" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6398.742061097016!2d85.13687307717692!3d25.62033697744103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed58504978e8f3%3A0x18cd15ae7d0e6cd!2sGolghar!5e1!3m2!1shi!2sin!4v1788345339487!5m2!1shi!2sin" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" title="गोलघर पटना का Google मानचित्र"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ मौसम ============ -->
+  <Weather />
+
+  <!-- ============ आसपास ============ -->
+  <section id="आसपास" class="section bg-[#1d241f] text-white">
+    <div class="shell">
+      <p class="eyebrow !text-[#e7c785]">आसपास</p>
+      <h2 class="section-title mt-3">गोलघर के बाद क्या देखें और क्या खाएँ</h2>
+      <div class="mt-8 grid gap-6 lg:grid-cols-2">
+        <div class="rounded-3xl bg-white/7 p-7">
+          <h3 class="text-2xl font-black">आसपास के दर्शनीय स्थल</h3>
+          <ul class="mt-4 space-y-3 text-stone-300">
+            <li><strong class="text-white">गांधी मैदान</strong> — केंद्रीय पटना का ऐतिहासिक खुला मैदान।</li>
+            <li><strong class="text-white">बिहार संग्रहालय</strong> — बिहार की कला, पुरातत्व और सांस्कृतिक इतिहास के लिए प्रमुख संग्रहालय।</li>
+            <li><strong class="text-white">बुद्ध स्मृति पार्क</strong> — पटना जंक्शन के पास आधुनिक बौद्ध स्मृति परिसर।</li>
+            <li><strong class="text-white">गांधी घाट</strong> — गंगा किनारे का प्रमुख घाट; शाम के समय लोकप्रिय।</li>
+            <li><strong class="text-white">पटना संग्रहालय</strong> — पुराना शहरी संग्रहालय, जहाँ दीदारगंज यक्षी जैसी प्रसिद्ध कलाकृतियाँ रखी हैं।</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl bg-white/7 p-7">
+          <h3 class="text-2xl font-black">स्थानीय भोजन</h3>
+          <p class="mt-4 text-stone-300">यह सूची स्थानीय स्वाद समझने के लिए है, किसी खास दुकान का व्यावसायिक प्रचार नहीं।</p>
+          <div class="mt-5 grid grid-cols-2 gap-3">
+            <span class="rounded-2xl bg-white/8 p-4">लिट्टी–चोखा</span>
+            <span class="rounded-2xl bg-white/8 p-4">सत्तू शरबत</span>
+            <span class="rounded-2xl bg-white/8 p-4">खाजा</span>
+            <span class="rounded-2xl bg-white/8 p-4">दही–चूड़ा</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6 rounded-3xl border border-[#e7c785]/30 p-7">
+        <h3 class="text-xl font-black">आधे-एक दिन की सैर का सुझाव</h3>
+        <ol class="mt-4 grid gap-3 text-stone-300 md:grid-cols-2">
+          <li class="flex gap-3"><span class="font-black text-[#e7c785]">1.</span> सुबह जल्दी गोलघर आएँ—हल्की भीड़ और ठंडा मौसम, ऊपर से गंगा का नज़ारा।</li>
+          <li class="flex gap-3"><span class="font-black text-[#e7c785]">2.</span> पास के गांधी मैदान में पैदल चलें और खुले आसमान का अनुभव लें।</li>
+          <li class="flex gap-3"><span class="font-black text-[#e7c785]">3.</span> किसी संग्रहालय (जैसे पटना संग्रहालय) में बिहार का इतिहास देखें।</li>
+          <li class="flex gap-3"><span class="font-black text-[#e7c785]">4.</span> शाम को गांधी घाट पर गंगा सूर्यास्त और हल्का नाश्ता करें।</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ कहानियाँ ============ -->
+  <section id="कहानियाँ" class="section">
+    <div class="shell">
+      <p class="eyebrow">किस्से और किंवदंतियाँ</p>
+      <h2 class="section-title mt-3 max-w-3xl">गोलघर के पीछे की कहानियाँ</h2>
+      <p class="mt-5 max-w-3xl text-stone-600">हर कहानी के साथ हमने यह भी बताया है कि वह <strong>दर्ज इतिहास</strong> है या <strong>स्थानीय चर्चा/पर्यटक अनुभव</strong>—ताकि आप तथ्य और कथा में फर्क समझ सकें।</p>
+      <div class="mt-8 grid gap-6 md:grid-cols-2">
+        <article class="card p-7">
+          <span class="inline-block rounded-full bg-[#236d72]/15 px-3 py-1 text-xs font-black text-[#236d72]">अभिलेख · ऐतिहासिक</span>
+          <h3 class="mt-3 text-xl font-black">अकेला बचा "पहला" अनाजघर</h3>
+          <p class="mt-2 muted">आधार पर खुदे अभिलेख के मुताबिक गोलघर ऐसे कई बड़े अनाजगृहों की कड़ी का पहला भवन था। योजना अकाल की स्थायी रोकथाम की थी, पर बाकी भवन कभी बने ही नहीं—इसलिए आज यह अपनी तरह का अकेला स्मारक है।</p>
+        </article>
+        <article class="card p-7">
+          <span class="inline-block rounded-full bg-[#8f4e36]/15 px-3 py-1 text-xs font-black text-[#8f4e36]">डिज़ाइन की कहानी</span>
+          <h3 class="mt-3 text-xl font-black">ऊपर से डाला, नीचे से निकाला</h3>
+          <p class="mt-2 muted">मज़दूर एक सीढ़ी से बोरियाँ चढ़ाकर ऊपर के छिद्र से अनाज डालते थे और दूसरी सीढ़ी से उतरते थे—यही दोहरी घुमावदार सीढ़ी (145 सीढ़ियाँ) आज भी देखी जा सकती है। निकासी के लिए भूतल पर छोटे द्वार बनाए गए थे।</p>
+        </article>
+        <article class="card p-7">
+          <span class="inline-block rounded-full bg-[#8f4e36]/15 px-3 py-1 text-xs font-black text-[#8f4e36]">स्थानीय कथा बनाम तथ्य</span>
+          <h3 class="mt-3 text-xl font-black">क्या गोलघर "कभी भरा ही नहीं"?</h3>
+          <p class="mt-2 muted">एक चर्चित कथा कहती है कि दरवाज़े अंदर की ओर खुलते थे, इसलिए भरा होने पर खुल नहीं पाते—इसीलिए गोलघर कभी पूरी क्षमता तक नहीं भरा गया। वहीं कई पर्यटकों ने देखा है कि असली दरवाज़े बाहर की ओर खुलते हैं, जिससे यह कथा विवादित रहती है।</p>
+        </article>
+        <article class="card p-7">
+          <span class="inline-block rounded-full bg-[#236d72]/15 px-3 py-1 text-xs font-black text-[#236d72]">ऐतिहासिक</span>
+          <h3 class="mt-3 text-xl font-black">गंगा किनारे क्यों?</h3>
+          <p class="mt-2 muted">गोलघर को गंगा के पास रखा गया था ताकि नाव/बजरे से अनाज आसानी से पहुँचाया जा सके और शहर के गोदामों से जोड़ा जा सके। नदी का किनारा ही उस ज़माने का सबसे बड़ा "लॉजिस्टिक हब" था।</p>
+        </article>
+        <article class="card p-7">
+          <span class="inline-block rounded-full bg-[#8f4e36]/15 px-3 py-1 text-xs font-black text-[#8f4e36]">पर्यटक अनुभव</span>
+          <h3 class="mt-3 text-xl font-black">गूँजता हुआ खोखला गुंबद</h3>
+          <p class="mt-2 muted">भीतर का खोखला, स्तंभ-रहित गुंबद अपनी ध्वनि-प्रतिध्वनि के लिए जाना जाता है; कई आगंतुक अंदर हल्की आवाज़ करके इसे आज़माते हैं। पहुँच स्थानीय व्यवस्था पर निर्भर करती है।</p>
+        </article>
+        <article class="card p-7">
+          <span class="inline-block rounded-full bg-[#236d72]/15 px-3 py-1 text-xs font-black text-[#236d72]">पॉप संस्कृति</span>
+          <h3 class="mt-3 text-xl font-black">फिल्मी पर्दे पर गोलघर</h3>
+          <p class="mt-2 muted">2019 की हिंदी फिल्म "India's Most Wanted" में गोलघर को फिल्माया गया था। पटना का यह गुंबद अक्सर शहर की पहचान के तौर पर सिनेमा और दस्तावेज़ी फिल्मों में दिखता है।</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ पहचान / फोटोग्राफी ============ -->
+  <section class="section bg-[#e9dfd0]">
+    <div class="shell">
+      <div class="grid gap-5 md:grid-cols-3">
+        <div class="photo-card h-72"><img src="/images/golghar-wide.jpg" alt="गोलघर (Golghar) का बाहरी दृश्य – पटना, बिहार, भारत" class="photo" loading="lazy" /></div>
+        <div class="card p-7">
+          <p class="eyebrow">भौगोलिक पहचान</p>
+          <h2 class="mt-3 text-3xl font-black">गंगा के पास, गांधी मैदान के पश्चिम</h2>
+          <p class="mt-4 muted">Google Maps और आधिकारिक पर्यटन विवरण दोनों गोलघर को मध्य पटना के गांधी मैदान–अशोक राजपथ क्षेत्र से जोड़ते हैं।</p>
+        </div>
+        <div class="card p-7">
+          <p class="eyebrow">फोटोग्राफी</p>
+          <h2 class="mt-3 text-3xl font-black">वक्रता और सीढ़ियों पर ध्यान दें</h2>
+          <p class="mt-4 muted">अर्धगोलाकार दीवार और बाहरी सीढ़ी गोलघर की सबसे विशिष्ट दृश्य पहचान हैं। सुबह-शाम की रोशनी में गुंबद की परछाईं बेहद फोटोजेनिक लगती है।</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section id="faq" class="section bg-[#efe7db]">
+    <div class="shell max-w-4xl">
+      <p class="eyebrow">FAQ</p>
+      <h2 class="section-title mt-3">अक्सर पूछे जाने वाले सवाल</h2>
+      <div class="mt-8 space-y-4">
+        <details class="card p-6" open><summary class="cursor-pointer font-black">गोलघर कब और किसने बनवाया?</summary><p class="mt-3 muted">1786 में, कैप्टन जॉन गार्स्टिन के निर्देशन में (ईस्ट इंडिया कंपनी के बंगाल इंजीनियर्स)। निर्माण 20 जुलाई 1786 को पूरा माना जाता है।</p></details>
+        <details class="card p-6"><summary class="cursor-pointer font-black">गोलघर क्यों बनाया गया था?</summary><p class="mt-3 muted">सेना व प्रशासन के लिए अनाज भंडारण; यह अकाल-रोकथाम की व्यापक योजना के तहत बनाए जाने वाले कई अनाजगृहों में पहला था। बाकी भवन कभी नहीं बने।</p></details>
+        <details class="card p-6"><summary class="cursor-pointer font-black">क्या ऊपर तक जाना हमेशा संभव है?</summary><p class="mt-3 muted">सीढ़ियों या ऊपरी भाग की पहुँच सुरक्षा, रखरखाव या स्थानीय निर्देश के कारण बदल सकती है। स्थल पर नवीनतम सूचना देखें।</p></details>
+        <details class="card p-6"><summary class="cursor-pointer font-black">क्या कैमरा ले जा सकते हैं?</summary><p class="mt-3 muted">बिहार पर्यटन की आधिकारिक जानकारी में मोबाइल, कैमरा और इलेक्ट्रॉनिक गैजेट्स की अनुमति बताई गई है; स्थानीय सुरक्षा निर्देश लागू रहेंगे।</p></details>
+        <details class="card p-6"><summary class="cursor-pointer font-black">क्या अंदर जाकर देख सकते हैं?</summary><p class="mt-3 muted">गोलघर का भीतरी भाग एक विशाल खोखला गुंबद है। भूतल के द्वार से अंदर देखने की सुविधा स्थानीय प्रबंधन/सुरक्षा व्यवस्था पर निर्भर करती है।</p></details>
+        <details class="card p-6"><summary class="cursor-pointer font-black">घूमने के लिए कितना समय चाहिए?</summary><p class="mt-3 muted">सामान्यतः 45–90 मिनट। सीढ़ियाँ चढ़ने, फोटोग्राफी और पास के गांधी मैदान/घाट की सैर मिलाकर आधा दिन आराम से लग सकता है।</p></details>
+        <details class="card p-6"><summary class="cursor-pointer font-black">पास में शौचालय, खाना, पार्किंग या एटीएम हैं?</summary><p class="mt-3 muted">हाँ—आस-पास रेस्तरां/कैफे, सड़क पार्किंग, दुकानें, एटीएम व दवा दुकानें जैसी सामान्य सुविधाएँ मिल सकती हैं। हम गैर-लाभकारी साइट हैं, इसलिए कोई प्रतिष्ठान नहीं सुझाते; <a class="underline" href="#सुविधाएँ">सुविधाएँ अनुभाग</a> देखें।</p></details>
+        <details class="card p-6"><summary class="cursor-pointer font-black">आधिकारिक जानकारी कहाँ देखें?</summary><p class="mt-3 muted"><a class="underline" href="https://tourism.bihar.gov.in/hi/destinations/patna/gol-ghar" target="_blank" rel="noopener">बिहार पर्यटन</a> और <a class="underline" href="https://patna.nic.in/tourist-place/gol-ghar/" target="_blank" rel="noopener">पटना जिला प्रशासन</a> प्राथमिक संदर्भ हैं।</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ स्रोत ============ -->
+  <section id="स्रोत" class="section">
+    <div class="shell max-w-4xl">
+      <p class="eyebrow">स्रोत और अस्वीकरण</p>
+      <h2 class="section-title mt-3">जानकारी कहाँ से आई</h2>
+      <ul class="mt-7 space-y-3 text-stone-700">
+        <li>• <a class="underline" href="https://tourism.bihar.gov.in/hi/destinations/patna/gol-ghar" target="_blank" rel="noopener">बिहार पर्यटन — गोलघर आधिकारिक पृष्ठ</a> (समय, प्रवेश, स्थान की प्राथमिक जानकारी)</li>
+        <li>• <a class="underline" href="https://patna.nic.in/tourist-place/gol-ghar/" target="_blank" rel="noopener">पटना जिला प्रशासन — पर्यटन सूची</a></li>
+        <li>• <a class="underline" href="https://en.wikipedia.org/wiki/Golghar" target="_blank" rel="noopener">विकिपीडिया — Golghar</a> (निर्माण-तिथि, अभिलेख, माप व संरक्षण इतिहास का तुलनात्मक संदर्भ)</li>
+        <li>• <a class="underline" href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (मौसम मॉड्यूल का डेटा स्रोत, मुफ़्त व बिना कुंजी)</li>
+      </ul>
+      <div class="mt-7 rounded-3xl border border-stone-300 bg-[#fffaf2] p-6 text-sm text-stone-600">
+        <p><strong>सामग्री अद्यतन:</strong> सितंबर 2026। समय, शुल्क, पहुँच और सुविधाएँ बदल सकती हैं—यात्रा से पहले आधिकारिक स्रोत से पुष्टि करें।</p>
+        <p class="mt-2">यह एक स्वतंत्र, गैर-लाभकारी सूचना परियोजना है; किसी सरकारी निकाय या वाणिज्यिक संचालक से संबद्ध नहीं। चित्रों के अधिकार उनके मूल फोटोग्राफरों/अधिकारधारकों के पास हैं।</p>
+      </div>
+    </div>
+  </section>
+
 </Base>

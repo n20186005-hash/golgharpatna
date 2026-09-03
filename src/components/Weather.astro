@@ -1,0 +1,186 @@
+---
+// गोलघर (पटना) के लिए Open-Meteo आधारित मौसम मॉड्यूल।
+// स्थिर (static) होस्टिंग पर कोई सर्वर रनटाइम नहीं होता, इसलिए डेटा ब्राउज़र से सीधे
+// Open-Meteo (मुफ़्त, बिना कुंजी, CORS-समर्थित) से लाया जाता है और
+// localStorage में 30 मिनट तक कैश रहता है (बार-बार अनुरोध नहीं होते)।
+// JavaScript बंद होने पर भी "घूमने का सही समय" वाला स्थिर भाग हमेशा दिखता है।
+---
+<section id="मौसम" class="section">
+  <div class="shell">
+    <p class="eyebrow">मौसम और योजना</p>
+    <h2 class="section-title mt-3">अभी का मौसम और 7 दिन का पूर्वानुमान</h2>
+
+    <!-- स्थिर (हमेशा दिखने वाला) सलाह-भाग -->
+    <div class="mt-5 grid gap-4 md:grid-cols-3">
+      <div class="card p-5">
+        <h3 class="font-black">घूमने का सबसे अच्छा समय</h3>
+        <p class="mt-2 text-sm muted">सितंबर–अप्रैल आरामदायक; अक्टूबर–मार्च सबसे सुहाना मौसम। सर्दियों में सुबह कोहरा संभव है।</p>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-black">गर्मी (मार्च–जून)</h3>
+        <p class="mt-2 text-sm muted">दिन बहुत गर्म हो सकते हैं। सुबह जल्दी या देर दोपहर में जाएँ; पानी साथ रखें।</p>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-black">मानसून (जुलाई–सितंबर)</h3>
+        <p class="mt-2 text-sm muted">बारिश के कारण सीढ़ियाँ फिसलन भरी हो सकती हैं; छाता रखें और मौसम पूर्वानुमान देखें।</p>
+      </div>
+    </div>
+
+    <!-- गतिशील भाग (JS से भरा जाता है) -->
+    <div id="weather-root" class="mt-6 grid gap-5 lg:grid-cols-[.9fr_1.1fr]">
+      <div class="card p-7">
+        <p class="text-sm font-black text-stone-500">आज का मौसम</p>
+        <div id="wx-now" class="mt-2 rounded-2xl bg-[#f5efe5] p-6 text-sm muted">मौसम की जानकारी लोड हो रही है…</div>
+      </div>
+      <div class="card p-7">
+        <p class="text-sm font-black text-stone-500">आगामी 7 दिन</p>
+        <div id="wx-days" class="mt-2 rounded-2xl bg-[#f5efe5] p-4 text-sm muted">मौसम की जानकारी लोड हो रही है…</div>
+      </div>
+    </div>
+    <p class="mt-4 text-xs text-stone-500">मौसम डेटा: Open-Meteo (मुफ़्त सेवा)। यह अनुमान है, वास्तविक स्थिति भिन्न हो सकती है—यात्रा से पहले नवीनतम पूर्वानुमान देखें।</p>
+  </div>
+</section>
+
+<script>
+  const LAT = '25.6203';
+  const LON = '85.1369';
+  const KEY = 'golghar-weather-v1';
+  const TTL = 30 * 60 * 1000; // 30 मिनट कैश
+
+  type WmEntry = [string, string];
+  const WM: Record<number, WmEntry> = {
+    0: ['☀️', 'साफ़ आसमान'],
+    1: ['🌤️', 'अधिकतर साफ़'],
+    2: ['⛅', 'आंशिक बादल'],
+    3: ['☁️', 'बादल छाए'],
+    45: ['🌫️', 'कोहरा'],
+    48: ['🌫️', 'कोहरा (पाला)'],
+    51: ['🌦️', 'हल्की बूंदाबांदी'],
+    53: ['🌦️', 'बूंदाबांदी'],
+    55: ['🌦️', 'तेज़ बूंदाबांदी'],
+    56: ['🌧️', 'हल्की बर्फीली बूंदाबांदी'],
+    57: ['🌧️', 'बर्फीली बूंदाबांदी'],
+    61: ['🌧️', 'हल्की बारिश'],
+    63: ['🌧️', 'बारिश'],
+    65: ['🌧️', 'तेज़ बारिश'],
+    66: ['🌧️', 'हल्की बर्फीली बारिश'],
+    67: ['🌧️', 'बर्फीली बारिश'],
+    71: ['🌨️', 'हल्की बर्फबारी'],
+    73: ['🌨️', 'बर्फबारी'],
+    75: ['🌨️', 'भारी बर्फबारी'],
+    77: ['🌨️', 'बर्फ के दाने'],
+    80: ['🌧️', 'हल्की बौछारें'],
+    81: ['🌧️', 'बौछारें'],
+    82: ['🌧️', 'तेज़ बौछारें'],
+    85: ['🌨️', 'हल्की बर्फीली बौछारें'],
+    86: ['🌨️', 'बर्फीली बौछारें'],
+    95: ['⛈️', 'गरज-चमक के साथ तूफान'],
+    96: ['⛈️', 'तूफान, ओले संभव'],
+    99: ['⛈️', 'भारी तूफान, ओले संभव']
+  };
+  const wmInfo = (code: number): WmEntry => WM[code] || ['🌡️', 'जानकारी उपलब्ध नहीं'];
+
+  function el(html: string): HTMLElement {
+    const t = document.createElement('template');
+    t.innerHTML = html.trim();
+    return t.content.firstElementChild as HTMLElement;
+  }
+
+  async function loadWeather(): Promise<void> {
+    const now = Date.now();
+    let data: any = null;
+    try {
+      const cached = localStorage.getItem(KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.t && now - parsed.t < TTL && parsed.data) data = parsed.data;
+      }
+    } catch (e) { /* स्टोरेज उपलब्ध न हो तो कोई बात नहीं */ }
+
+    if (!data) {
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + LAT +
+        '&longitude=' + LON +
+        '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m' +
+        '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+        '&timezone=Asia%2FKolkata&forecast_days=7&wind_speed_unit=kmh';
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 15000);
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        data = await res.json();
+        try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), data })); } catch (e) { /* ignore */ }
+      } catch (e) {
+        renderError();
+        return;
+      } finally {
+        window.clearTimeout(timer);
+      }
+    }
+    render(data);
+  }
+
+  function renderError(): void {
+    const root = document.getElementById('wx-now');
+    if (root) root.innerHTML = '<p>मौसम की जानकारी अभी लोड नहीं हो सकी। कृपया बाद में पुनः प्रयास करें या <a class="underline" href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> पर देखें।</p>';
+    const days = document.getElementById('wx-days');
+    if (days) days.innerHTML = '<p>मौसम की जानकारी अभी लोड नहीं हो सकी। कृपया बाद में पुनः प्रयास करें।</p>';
+  }
+
+  function chip(label: string, value: string): string {
+    return '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">' + label +
+      '</span><strong class="text-[#1d241f]">' + value + '</strong></div>';
+  }
+
+  function render(d: any): void {
+    const c = d.current;
+    const icon = wmInfo(c.weather_code);
+    const nowBox = document.getElementById('wx-now');
+    if (nowBox) {
+      nowBox.innerHTML = '';
+      nowBox.appendChild(el(
+        '<div class="flex flex-wrap items-center gap-5">' +
+          '<span class="text-6xl leading-none">' + icon[0] + '</span>' +
+          '<div>' +
+            '<strong class="block text-5xl font-black text-[#1d241f]">' + Math.round(c.temperature_2m) + '°C</strong>' +
+            '<span class="mt-1 block font-bold text-[#236d72]">' + icon[1] + '</span>' +
+          '</div>' +
+        '</div>'
+      ));
+      nowBox.appendChild(el(
+        '<div class="mt-5 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">' +
+          chip('महसूस', Math.round(c.apparent_temperature) + '°C') +
+          chip('नमी', c.relative_humidity_2m + '%') +
+          chip('हवा', Math.round(c.wind_speed_10m) + ' किमी/घं') +
+          chip('वर्षा', (c.precipitation || 0) + ' मिमी') +
+        '</div>'
+      ));
+    }
+
+    const daysBox = document.getElementById('wx-days');
+    if (daysBox && d.daily && d.daily.time) {
+      daysBox.innerHTML = '';
+      const list = el('<ul class="divide-y divide-stone-300/70"></ul>');
+      d.daily.time.forEach((date: string, i: number) => {
+        const dt = new Date(date + 'T00:00:00');
+        const wd = dt.toLocaleDateString('hi-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+        const w = wmInfo(d.daily.weather_code[i]);
+        const pr = (d.daily.precipitation_probability_max && d.daily.precipitation_probability_max[i] != null)
+          ? String(d.daily.precipitation_probability_max[i]) + '%' : '—';
+        const li = el(
+          '<li class="flex items-center justify-between gap-3 py-3">' +
+            '<span class="w-24 shrink-0 font-black">' + wd + '</span>' +
+            '<span class="shrink-0" aria-hidden="true">' + w[0] + '</span>' +
+            '<span class="flex-1 truncate text-stone-600">' + w[1] + '</span>' +
+            '<span class="shrink-0 font-bold">' + Math.round(d.daily.temperature_2m_min[i]) + '° / ' + Math.round(d.daily.temperature_2m_max[i]) + '°</span>' +
+            '<span class="shrink-0 rounded-full bg-[#236d72]/12 px-2 py-0.5 text-xs font-bold text-[#236d72]">💧 ' + pr + '</span>' +
+          '</li>'
+        );
+        list.appendChild(li);
+      });
+      daysBox.appendChild(list);
+    }
+  }
+
+  loadWeather();
+</script>

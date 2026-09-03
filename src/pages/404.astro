@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+const title = 'पृष्ठ नहीं मिला (404) | गोलघर पटना यात्रा मार्गदर्शिका';
+const description = 'यह पृष्ठ उपलब्ध नहीं है। गोलघर (Golghar), पटना के इतिहास, यात्रा समय और स्थानीय मार्गदर्शिका पर वापस जाएँ।';
+---
+<Base {title} {description} robots="noindex,follow">
+  <section class="section">
+    <div class="shell max-w-3xl text-center">
+      <p class="eyebrow">त्रुटि 404</p>
+      <h1 class="section-title mt-3">यह पृष्ठ नहीं मिला</h1>
+      <p class="mx-auto mt-5 max-w-xl text-stone-600">हो सकता है कि पता बदल गया हो या गलत टाइप किया गया हो। गोलघर की मुख्य जानकारी नीचे से देखें।</p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a class="btn btn-primary" href="/">मुख्य पृष्ठ पर जाएँ</a>
+        <a class="btn btn-ghost" href="/#इतिहास">इतिहास</a>
+        <a class="btn btn-ghost" href="/#यात्रा">यात्रा जानकारी</a>
+        <a class="btn btn-ghost" href="/#faq">सामान्य प्रश्न</a>
+      </div>
+    </div>
+  </section>
+</Base>
