@@ -1,0 +1,10 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+const { title, description, image='/images/golghar-hero.jpg', schema=[] } = Astro.props;
+const site = Astro.site;
+const canonical = site ? new URL(Astro.url.pathname, site).toString() : undefined;
+const ogImage = site ? new URL(image, site).toString() : undefined;
+---
+<!doctype html><html lang="hi-IN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/><title>{title}</title><meta name="description" content={description}/><meta name="robots" content="index,follow"/>{canonical && <link rel="canonical" href={canonical}/>}<meta property="og:type" content="website"/><meta property="og:title" content={title}/><meta property="og:description" content={description}/>{canonical && <meta property="og:url" content={canonical}/>} {ogImage && <meta property="og:image" content={ogImage}/>}<meta property="og:locale" content="hi_IN"/><meta name="twitter:card" content="summary_large_image"/><link rel="icon" href="/favicon/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon/favicon-32.png" sizes="32x32"/><link rel="icon" href="/favicon/favicon-16.png" sizes="16x16"/><link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png"/>{schema.map((item:any)=><script type="application/ld+json" set:html={JSON.stringify(item)} />)}<script is:inline>{`(function(){try{var c=localStorage.getItem('golghar-cookie-consent');if(c){var p=JSON.parse(c);if(p.analytics){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-HXM22WWPKP';document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)};window.gtag=gtag;gtag('js',new Date());gtag('config','G-HXM22WWPKP',{anonymize_ip:true});}}}catch(e){}})();`}</script></head><body><a class="skip" href="#main">मुख्य सामग्री पर जाएँ</a><Header/><main id="main"><slot/></main><Footer/></body></html>

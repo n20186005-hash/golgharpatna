@@ -1,0 +1,9 @@
+---
+const { compact=false } = Astro.props;
+---
+<a href="/" class="inline-flex items-center gap-3 no-underline" aria-label="गोलघर यात्रा मार्गदर्शिका">
+  <svg width={compact?38:46} height={compact?38:46} viewBox="0 0 64 64" role="img" aria-hidden="true">
+    <circle cx="32" cy="32" r="30" fill="#1d241f"/><path d="M17 43C18 29 23 18 32 13c9 5 14 16 15 30H17Z" fill="#f5efe5"/><path d="M20 43c4-4 9-6 14-7 5-1 9-4 12-8" fill="none" stroke="#c69b54" stroke-width="3" stroke-linecap="round"/><path d="M14 48c11 4 25 4 36 0" fill="none" stroke="#236d72" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  {!compact && <span><strong class="block text-lg leading-none">गोलघर</strong><small class="text-xs text-stone-600">पटना यात्रा मार्गदर्शिका</small></span>}
+</a>
