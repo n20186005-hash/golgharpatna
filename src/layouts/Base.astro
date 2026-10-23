@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-const { title, description, image='/images/golghar-hero.jpg', imageAlt='गोलघर (Golghar) – पटना, बिहार, भारत में मुख्य दृश्य', robots='index,follow', schema=[] } = Astro.props;
+const { title, description, image='/images/golghar-hero.svg', imageAlt='गोलघर का वैचारिक रेखाचित्र, वास्तविक फोटो नहीं', robots='index,follow', schema=[] } = Astro.props;
 const site = Astro.site;
 const canonical = site ? new URL(Astro.url.pathname, site).toString() : undefined;
 const ogImage = site ? new URL(image, site).toString() : undefined;
@@ -46,9 +46,7 @@ const ogImage = site ? new URL(image, site).toString() : undefined;
   {schema.map((item:any)=><script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
 
   <!-- GA4 (सहमति-गेटेड) -->
-  <script is:inline>
-    (function(){try{var c=localStorage.getItem('golghar-cookie-consent');if(c){var p=JSON.parse(c);if(p.analytics){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-HXM22WWPKP';document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)};window.gtag=gtag;gtag('js',new Date());gtag('config','G-HXM22WWPKP',{anonymize_ip:true});}}}catch(e){}})();
-  </script>
+  <script is:inline src="/analytics.js"></script>
 </head>
 <body>
   <a class="skip" href="#main">मुख्य सामग्री पर जाएँ</a>

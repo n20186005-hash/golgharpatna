@@ -1,9 +1,9 @@
-/* गोलघर पटना – Service Worker (v2026-09-03) */
-const CACHE = 'golghar-patna-v2026-09-03';
+/* गोलघर पटना – Service Worker (v2026-10-23) */
+const CACHE = 'golghar-patna-v2026-10-23';
 const PRECACHE = [
   '/',
   '/manifest.webmanifest',
-  '/images/golghar-hero.jpg',
+  '/images/golghar-hero.svg',
   '/favicon/favicon.svg',
   '/favicon/apple-touch-icon.png'
 ];
@@ -37,11 +37,11 @@ self.addEventListener('fetch', (event) => {
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
+          if(res.ok) event.waitUntil(caches.open(CACHE).then((cache) => cache.put(req, copy)));
           return res;
         })
         .catch(() =>
-          caches.match(req).then((cached) => cached || caches.match('/'))
+          caches.match(req).then((cached) => cached || new Response('यह पृष्ठ ऑफलाइन उपलब्ध नहीं है। कनेक्शन आने पर पुनः लोड करें।',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}}))
         )
     );
     return;

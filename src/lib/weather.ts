@@ -1,0 +1,208 @@
+const WM: Record<number, [string, string]> = {
+  0: ['☀️', 'साफ़ आसमान'],
+  1: ['🌤️', 'अधिकतर साफ़'],
+  2: ['⛅', 'आंशिक बादल'],
+  3: ['☁️', 'बादल छाए'],
+  45: ['🌫️', 'कोहरा'],
+  48: ['🌫️', 'कोहरा (पाला)'],
+  51: ['🌦️', 'हल्की बूंदाबांदी'],
+  53: ['🌦️', 'बूंदाबांदी'],
+  55: ['🌦️', 'तेज़ बूंदाबांदी'],
+  56: ['🌧️', 'हल्की बर्फीली बूंदाबांदी'],
+  57: ['🌧️', 'बर्फीली बूंदाबांदी'],
+  61: ['🌧️', 'हल्की बारिश'],
+  63: ['🌧️', 'बारिश'],
+  65: ['🌧️', 'तेज़ बारिश'],
+  66: ['🌧️', 'हल्की बर्फीली बारिश'],
+  67: ['🌧️', 'बर्फीली बारिश'],
+  71: ['🌨️', 'हल्की बर्फबारी'],
+  73: ['🌨️', 'बर्फबारी'],
+  75: ['🌨️', 'भारी बर्फबारी'],
+  77: ['🌨️', 'बर्फ के दाने'],
+  80: ['🌧️', 'हल्की बौछारें'],
+  81: ['🌧️', 'बौछारें'],
+  82: ['🌧️', 'तेज़ बौछारें'],
+  85: ['🌨️', 'हल्की बर्फीली बौछारें'],
+  86: ['🌨️', 'बर्फीली बौछारें'],
+  95: ['⛈️', 'गरज-चमक के साथ तूफान'],
+  96: ['⛈️', 'तूफान, ओले संभव'],
+  99: ['⛈️', 'भारी तूफान, ओले संभव']
+};
+const wmInfo = (code: number): [string, string] => WM[code] || ['🌡️', 'विवरण उपलब्ध नहीं'];
+
+const fmtDay = (date: string): string => {
+  const dt = new Date(date + 'T12:00:00Z');
+  return dt.toLocaleDateString('hi-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone:'UTC' });
+};
+
+export const nowHtml = (d: any): string => {
+  const c = d.current;
+  const dl = d.daily;
+  const ic = wmInfo(c.weather_code);
+  const uv = (dl.uv_index_max && dl.uv_index_max[0] != null) ? Math.round(dl.uv_index_max[0]) : '—';
+  const pr = (dl.precipitation_probability_max && dl.precipitation_probability_max[0] != null) ? String(dl.precipitation_probability_max[0]) + '%' : '—';
+  return (
+    '<div class="flex flex-wrap items-center gap-5">' +
+      '<span class="text-6xl leading-none">' + ic[0] + '</span>' +
+      '<div><strong class="block text-5xl font-black text-[#1d241f]">' + Math.round(c.temperature_2m) + '°C</strong>' +
+      '<span class="mt-1 block font-bold text-[#236d72]">' + ic[1] + '</span></div>' +
+    '</div>' +
+    '<div class="mt-5 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">महसूस</span><strong class="text-[#1d241f]">' + Math.round(c.apparent_temperature) + '°C</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">नमी</span><strong class="text-[#1d241f]">' + c.relative_humidity_2m + '%</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">हवा</span><strong class="text-[#1d241f]">' + Math.round(c.wind_speed_10m) + ' किमी/घं</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">UV</span><strong class="text-[#1d241f]">' + uv + '</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">वर्षा की संभावना</span><strong class="text-[#1d241f]">' + pr + '</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">वर्षा</span><strong class="text-[#1d241f]">' + (c.precipitation || 0) + ' मिमी</strong></div>' +
+    '</div><p class="mt-4 text-xs">प्रदाता का समय: ' + c.time.replace('T',' ') + ' · Asia/Kolkata (UTC+5:30)</p>'
+  );
+};
+
+export const daysHtml = (d: any): string => {
+  const dl = d.daily;
+  if (!dl || !dl.time) return '';
+  let items = '';
+  dl.time.forEach((date: string, i: number) => {
+    const w = wmInfo(dl.weather_code[i]);
+    const pr = (dl.precipitation_probability_max && dl.precipitation_probability_max[i] != null)
+      ? String(dl.precipitation_probability_max[i]) + '%' : '—';
+    items +=
+      '<li class="flex items-center justify-between gap-3 py-3">' +
+        '<span class="w-24 shrink-0 font-black">' + fmtDay(date) + '</span>' +
+        '<span class="shrink-0" aria-hidden="true">' + w[0] + '</span>' +
+        '<span class="flex-1 truncate text-stone-600">' + w[1] + '</span>' +
+        '<span class="shrink-0 font-bold">' + Math.round(dl.temperature_2m_min[i]) + '° / ' + Math.round(dl.temperature_2m_max[i]) + '°</span>' +
+        '<span class="shrink-0 rounded-full bg-[#236d72]/12 px-2 py-0.5 text-xs font-bold text-[#236d72]">💧 ' + pr + '</span>' +
+      '</li>';
+  });
+  return '<ul class="divide-y divide-stone-300/70">' + items + '</ul>';
+};
+
+// किमी/घं → बीफ़ोर्ट पैमाना (हवा की तीव्रता)
+const beaufort = (kmh: number): number => {
+  if (kmh < 1) return 0;
+  if (kmh < 6) return 1;
+  if (kmh < 12) return 2;
+  if (kmh < 20) return 3;
+  if (kmh < 29) return 4;
+  if (kmh < 39) return 5;
+  if (kmh < 50) return 6;
+  if (kmh < 62) return 7;
+  if (kmh < 75) return 8;
+  if (kmh < 89) return 9;
+  if (kmh < 103) return 10;
+  if (kmh < 118) return 11;
+  return 12;
+};
+
+// मौसम-आधारित स्मार्ट सुझाव — केवल लागू होने वाले आइटम दे।
+export const buildAdvice = (d: any): { outfit: string[]; plan: string[]; items: string[]; risk: string[] } => {
+  const c = d.current;
+  const dl = d.daily;
+  const code = c.weather_code;
+  const tempHigh = Math.round(dl.temperature_2m_max[0]);
+  const tempLow = Math.round(dl.temperature_2m_min[0]);
+  const delta = tempHigh - tempLow;
+  const wind = Math.round(c.wind_speed_10m);
+  const bf = beaufort(wind);
+  const uv = (dl.uv_index_max && dl.uv_index_max[0] != null) ? Math.round(dl.uv_index_max[0]) : 0;
+  const prToday = dl.precipitation_probability_max[0] ?? 0;
+
+  const isThunder = code >= 95 && code <= 99;
+  const isHeavyRain = code === 65 || code === 67 || code === 82;
+  const isModRain = code === 63 || code === 81;
+  const isLightRain = (code >= 51 && code <= 61) || code === 80;
+  const isFog = code === 45 || code === 48;
+  const isClear = code === 0 || code === 1;
+  const isCloud = code === 2 || code === 3;
+
+  const outfit: string[] = [], plan: string[] = [], items: string[] = [], risk: string[] = [];
+
+  // वर्षा
+  if (prToday >= 60 || isModRain || isHeavyRain) {
+    outfit.push('बारिश की संभावना है—पानी रोकने वाले कपड़े या रेनकोट बेहतर रहेंगे।');
+    plan.push('अंदर के स्थान (जैसे संग्रहालय) प्राथमिकता दें; गीली बाहरी सीढ़ियाँ फिसलन भरी हो सकती हैं।');
+    items.push('छाता / रेनकोट');
+  } else if (isLightRain) {
+    plan.push('हल्की बूंदाबांदी—रास्ते गीले, चलते समय फिसलन से बचें।');
+    items.push('फोल्डेबल छाता');
+  }
+  if (isThunder) risk.push('बिजली-गरज की स्थिति—पेड़ों और ऊँची जगहों से दूर रहें, सीढ़ियाँ न चढ़ें; खुले स्थानों पर न जाएँ।');
+  if (isHeavyRain) risk.push('बारिश अधिक है—निचले/भीड़ वाले इलाकों से दूर रहें; फिसलन से बचें और स्थल के वर्तमान निर्देश देखें।');
+  if (isFog) risk.push('कोहरा—दृश्यता कम; ऊपरी मंच से नगर/नदी का दृश्य स्पष्ट नहीं रहेगा, सावधानी रखें।');
+
+  // गर्मी व UV
+  if (tempHigh >= 32) {
+    outfit.push('तापमान अधिक—हल्के, साँस लेने वाले कपड़े पहनें।');
+    plan.push('दोपहर की चरम गर्मी से बचें, खुले में समय कम रखें।');
+    items.push('सनस्क्रीन, पर्याप्त पानी, टोपी');
+  }
+  if (uv >= 5) {
+    outfit.push('UV प्रबल—ढ़का हुआ व हल्का कपड़ा बेहतर।');
+    items.push('सनस्क्रीन, धूप का चश्मा, टोपी');
+  }
+  if (tempHigh <= 10) {
+    outfit.push('ठंड अधिक—गर्म जैकेट/स्वेटर पहनें।');
+    items.push('जैकेट / स्वेटर');
+  }
+  if (delta > 8) outfit.push('दिन-रात का तापमान अंतर बड़ा—एक जैकेट/शॉल रखें ताकि कपड़े बदल सकें।');
+
+  // हवा
+  if (bf >= 7) {
+    risk.push('तेज़ हवा (' + bf + ' स्केल)—ऊँची जगहों व साइनबोर्ड से दूर रहें; खुले ऊपरी हिस्से में सावधानी।');
+  } else if (bf >= 5) {
+    plan.push('हवा तेज़ चल रही है—ऊपरी सीढ़ियों पर पकड़ बनाए रखें।');
+    items.push('टोपी (हवा में उड़ सकती है)');
+  }
+
+  // साफ / बादल (फ़ॉलबैक)
+  if ((isClear || isCloud) && outfit.length === 0 && plan.length === 0) {
+    plan.push(isClear
+      ? 'मौसम साफ—घूमने के लिए बढ़िया; सुबह/शाम का प्रकाश फोटो के लिए उत्कृष्ट।'
+      : 'रौशनी नरम है—फोटोग्राफी के लिए अच्छा।');
+  }
+
+  if (outfit.length === 0) outfit.push('मौसम सामान्य—आरामदायक कपड़े पहनें।');
+  if (plan.length === 0) plan.push('वास्तविक स्थिति और स्थानीय निर्देश देखकर घूमने की योजना बनाएँ।');
+  if (items.length === 0) items.push('पानी की बोतल रखना अच्छा रहेगा।');
+
+  return { outfit, plan, items, risk };
+};
+
+const adviceCol = (title: string, list: string[]): string =>
+  '<div class="rounded-2xl border border-[#236d72]/20 bg-[#236d72]/6 p-4">' +
+    '<h4 class="text-sm font-black text-[#236d72]">' + title + '</h4>' +
+    '<ul class="mt-2 space-y-1.5 text-sm text-stone-700">' +
+    list.map((i) => '<li class="flex gap-2"><span aria-hidden="true">✓</span><span>' + i + '</span></li>').join('') +
+    '</ul></div>';
+
+export const renderAdvice = (a: { outfit: string[]; plan: string[]; items: string[]; risk: string[] }): string => {
+  let html = '';
+  if (a.risk && a.risk.length) {
+    html += '<div class="rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-800">' +
+      '<p class="font-black">⚠️ सुरक्षा सावधानी</p>' +
+      '<ul class="mt-2 space-y-1.5">' +
+      a.risk.map((r) => '<li class="flex gap-2"><span aria-hidden="true">⚠️</span><span>' + r + '</span></li>').join('') +
+      '</ul></div>';
+  }
+  html += '<div class="mt-3 grid gap-3 sm:grid-cols-3">' +
+    adviceCol('👕 यात्रा पहनावा', a.outfit) +
+    adviceCol('🗺️ घूमने की योजना', a.plan) +
+    adviceCol('🎒 साथ रखें', a.items) +
+    '</div>';
+  return html;
+};
+
+
+export function validateWeather(d:any,now=Date.now()):any {
+ const num=(v:any,min:number,max:number)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)throw Error('Invalid weather number');};
+ const code=(v:any)=>{if(typeof v!=='number'||!Object.hasOwn(WM,v))throw Error('Invalid WMO');};
+ const c=d?.current,x=d?.daily,TZ='Asia/Kolkata';
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(now));
+ if(!c||!x||d.timezone!==TZ||typeof c.time!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(c.time))throw Error('Incomplete weather');
+ const age=now-Date.parse(c.time+'+05:30');if(!Number.isFinite(age)||age>10800000||age< -900000||c.time.slice(0,10)!==today)throw Error('Stale weather');
+ num(c.temperature_2m,-100,65);num(c.apparent_temperature,-120,80);num(c.relative_humidity_2m,0,100);num(c.wind_speed_10m,0,500);num(c.precipitation,0,500);code(c.weather_code);
+ for(const key of ['time','weather_code','temperature_2m_max','temperature_2m_min','precipitation_probability_max','uv_index_max'])if(!Array.isArray(x[key])||x[key].length!==7)throw Error('Incomplete daily weather');
+ x.time.forEach((day:any,i:number)=>{if(typeof day!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isFinite(Date.parse(day))||new Date(day).toISOString().slice(0,10)!==day||(i===0&&day!==today)||(i>0&&Date.parse(day)-Date.parse(x.time[i-1])!==86400000))throw Error('Invalid daily dates');num(x.temperature_2m_max[i],-100,65);num(x.temperature_2m_min[i],-100,65);if(x.temperature_2m_min[i]>x.temperature_2m_max[i])throw Error('Inverted temperatures');code(x.weather_code[i]);if(x.precipitation_probability_max[i]!==null)num(x.precipitation_probability_max[i],0,100);if(x.uv_index_max[i]!==null)num(x.uv_index_max[i],0,30);});return d;
+}
+export const weatherUrl='https://api.open-meteo.com/v1/forecast?latitude=25.620337&longitude=85.139448&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=Asia%2FKolkata&forecast_days=7&wind_speed_unit=kmh';

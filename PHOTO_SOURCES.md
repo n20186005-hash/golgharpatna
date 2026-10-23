@@ -1,14 +1,3 @@
-# Photo sources and attribution
+# Illustration provenance
 
-The site is designed to use local JPG files under `public/images/`.
-
-Preferred real-photo sources researched for Golghar:
-
-1. `golghar-hero.jpg` — “Golghar, Patna.jpg”, Nandanupadhyay, CC BY-SA 3.0
-   Source page: https://commons.wikimedia.org/wiki/File:Golghar,_Patna.jpg
-2. `golghar-stairs.jpg` — “Patna - Golghar.jpg”, Wikimedia Commons (check source page for author/license)
-   Source page: https://commons.wikimedia.org/wiki/File:Patna_-_Golghar.jpg
-3. `golghar-wide.jpg` — “Golghar patna.jpg”, Bhassingh, Wikimedia Commons (ASI monument S-BR-17; check source page for current license terms)
-   Source page: https://commons.wikimedia.org/wiki/File:Golghar_patna.jpg
-
-Keep photographer attribution and license notices when replacing or redistributing photos.
+The three public SVG files are original code-native conceptual illustrations created for this guide. They are visibly labelled in Hindi as illustrations, not photographs or scale drawings. The previous three photographs were removed because their exact current source identity and licence conditions could not be verified. No Commons licence claim is carried over to the replacement drawings.
