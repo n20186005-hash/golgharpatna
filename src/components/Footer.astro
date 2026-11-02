@@ -1,4 +1,66 @@
 ---
 import Logo from './Logo.astro';
+import type { Locale } from '../content/guide-schema';
+import { GROUPS, REVIEWED_ON_TEXT, urlFor } from '../lib/site';
+
+const { locale = 'hi' } = Astro.props as { locale: Locale };
+const copy =
+  locale === 'hi'
+    ? {
+        disclosure:
+          'यह वेबसाइट एक स्वतंत्र पर्यटक सूचना मार्गदर्शिका है। इसका किसी सरकारी संस्था या आधिकारिक संगठन से कोई संबंध नहीं है।',
+        basis:
+          'स्थल संबंधी जानकारी पटना जिला प्रशासन के इतिहास विवरण, बिहार पर्यटन की सार्वजनिक सूची और दिनांकित सार्वजनिक मानचित्र सूची पर आधारित है। वर्तमान संचालन समय और शुल्क स्थल पर जाँचें।',
+        images: 'चित्र: इस मार्गदर्शिका के मूल सांकेतिक SVG रेखाचित्र; वास्तविक फोटो या मापचित्र नहीं।',
+        sections: 'विषय',
+        legal: 'कानूनी',
+        privacy: 'गोपनीयता नीति',
+        terms: 'सेवा की शर्तें',
+        cookies: 'कुकी सेटिंग्स',
+        reviewed: 'अंतिम समीक्षा',
+        rights: 'सर्वाधिकार सुरक्षित।'
+      }
+    : {
+        disclosure:
+          'This website is an independent visitor information guide. It has no connection with any government body or official organisation.',
+        basis:
+          'Place information is based on the Patna district administration history page, public Bihar Tourism listings and a dated public map listing. Current opening hours and fees must be checked on site.',
+        images: 'Images: original illustrative SVG drawings made for this guide; they are not photographs or measured plans.',
+        sections: 'Sections',
+        legal: 'Legal',
+        privacy: 'Privacy policy',
+        terms: 'Terms of use',
+        cookies: 'Cookie settings',
+        reviewed: 'Last reviewed',
+        rights: 'All rights reserved.'
+      };
+const year = new Date().getFullYear();
 ---
-<footer class="border-t border-stone-300 bg-[#e9dfd0] py-12"><div class="shell grid gap-9 lg:grid-cols-[1fr_1.4fr]"><div><Logo/><p class="mt-4 max-w-md text-sm text-stone-600">यह वेबसाइट एक स्वतंत्र पर्यटक सूचना मार्गदर्शिका है। इसका किसी सरकारी संस्था या आधिकारिक संगठन से कोई संबंध नहीं है।</p></div><div class="text-sm text-stone-700"><p>स्थल संबंधी जानकारी पटना जिला प्रशासन के इतिहास विवरण और दिनांकित सार्वजनिक मानचित्र सूची पर आधारित है। वर्तमान संचालन और शुल्क स्थल पर जाँचें।</p><p class="mt-3">चित्र: इस मार्गदर्शिका के मूल सांकेतिक SVG रेखाचित्र; वास्तविक फोटो या मापचित्र नहीं।</p><div class="mt-5 flex flex-wrap gap-4 font-bold"><a href="/privacy/">गोपनीयता नीति</a><a href="/terms/">सेवा की शर्तें</a><a href="/cookies/">कुकी सेटिंग्स</a></div><p class="mt-5">© 2026 गोलघर पटना यात्रा मार्गदर्शिका। सर्वाधिकार सुरक्षित।</p></div></div></footer>
+<footer class="border-t border-stone-300 bg-[#e9dfd0] py-12">
+  <div class="shell grid gap-9 lg:grid-cols-[1fr_1.4fr]">
+    <div>
+      <Logo locale={locale} />
+      <p class="mt-4 max-w-md text-sm text-stone-600">{copy.disclosure}</p>
+      <nav class="mt-6" aria-label={copy.sections}>
+        <p class="text-xs font-bold uppercase tracking-[.16em] text-[#8f4e36]">{copy.sections}</p>
+        <ul class="mt-3 grid gap-1 text-sm font-bold sm:grid-cols-2">
+          {GROUPS.map((group) => <li><a href={urlFor(locale, group.id)}>{group.label[locale]}</a></li>)}
+        </ul>
+      </nav>
+    </div>
+    <div class="text-sm text-stone-700">
+      <p>{copy.basis}</p>
+      <p class="mt-3">{copy.images}</p>
+      <div class="mt-5" aria-label={copy.legal}>
+        <p class="text-xs font-bold uppercase tracking-[.16em] text-[#8f4e36]">{copy.legal}</p>
+        <div class="mt-3 flex flex-wrap gap-4 font-bold">
+          <a href={urlFor(locale, 'privacy')}>{copy.privacy}</a>
+          <a href={urlFor(locale, 'terms')}>{copy.terms}</a>
+          <a href={urlFor(locale, 'cookies')}>{copy.cookies}</a>
+        </div>
+      </div>
+      <p class="mt-5">{copy.reviewed}: {REVIEWED_ON_TEXT[locale]}</p>
+      <p class="mt-2">© {year} {locale === 'hi' ? 'गोलघर पटना यात्रा मार्गदर्शिका' : 'Golghar Patna Travel Guide'} — {copy.rights}</p>
+    </div>
+  </div>
+</footer>

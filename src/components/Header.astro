@@ -1,22 +1,32 @@
 ---
 import Logo from './Logo.astro';
+import type { Locale } from '../content/guide-schema';
+import { GROUPS, urlFor } from '../lib/site';
+
+const { locale = 'hi', altPath } = Astro.props as { locale: Locale; altPath?: string };
+const other: Locale = locale === 'hi' ? 'en' : 'hi';
+const switchHref = typeof altPath === 'string' ? urlFor(other, altPath) : urlFor(other, '');
+const switchLabel = locale === 'hi' ? 'English' : 'हिन्दी';
+const switchAria = locale === 'hi' ? 'Switch to English' : 'हिन्दी में देखें';
+const navAria = locale === 'hi' ? 'मुख्य नेविगेशन' : 'Main navigation';
+const mobileAria = locale === 'hi' ? 'मोबाइल नेविगेशन' : 'Mobile navigation';
+const mapLabel = locale === 'hi' ? 'मानचित्र खोलें' : 'Open map';
+const homeLabel = locale === 'hi' ? 'मुख्य पृष्ठ' : 'Home';
 ---
 <header class="sticky top-0 z-50 border-b border-stone-200/70 bg-[#f5efe5]/90 backdrop-blur-xl">
-  <div class="shell flex items-center justify-between py-3">
-    <Logo />
-    <nav class="hidden gap-4 text-sm font-bold lg:flex" aria-label="मुख्य नेविगेशन">
-      <a href="/#इतिहास">इतिहास</a>
-      <a href="/#वास्तुकला">वास्तुकला</a>
-      <a href="/#यात्रा">यात्रा</a>
-      <a href="/#सुविधाएँ">सुविधाएँ</a>
-      <a href="/#परिवहन">परिवहन</a>
-      <a href="/#मौसम">मौसम</a>
-      <a href="/#मौसम-रणनीति">मौसम रणनीति</a>
-      <a href="/#यात्रा-योजना">यात्रा योजना</a>
-      <a href="/#आसपास">आसपास</a>
-      <a href="/#जिम्मेदारी">ज़िम्मेदारी</a>
-      <a href="/#faq">FAQ</a>
+  <div class="shell flex items-center justify-between gap-4 py-3">
+    <Logo locale={locale} />
+    <nav class="hidden gap-5 text-sm font-bold lg:flex" aria-label={navAria}>
+      <a href={urlFor(locale)}>{homeLabel}</a>
+      {GROUPS.map((group) => <a href={urlFor(locale, group.id)}>{group.label[locale]}</a>)}
     </nav>
-    <a class="btn btn-primary text-sm" href="https://maps.app.goo.gl/QowA7WfKUocCjCgH8" target="_blank" rel="noopener">मानचित्र खोलें</a>
+    <div class="flex items-center gap-2">
+      <a class="lang-switch" href={switchHref} hreflang={other} aria-label={switchAria}>{switchLabel}</a>
+      <a class="btn btn-primary text-sm" href="https://maps.app.goo.gl/QowA7WfKUocCjCgH8" target="_blank" rel="noopener">{mapLabel}</a>
+    </div>
   </div>
-<nav class="shell mobile-nav" aria-label="मोबाइल नेविगेशन"><a href="/#यात्रा">समय और टिकट</a><a href="/#परिवहन">स्थान</a><a href="/#इतिहास">इतिहास</a><a href="/#मौसम">मौसम</a></nav></header>
+  <nav class="shell mobile-nav" aria-label={mobileAria}>
+    {GROUPS.map((group) => <a href={urlFor(locale, group.id)}>{group.label[locale]}</a>)}
+    <a href={switchHref} hreflang={other}>{switchLabel}</a>
+  </nav>
+</header>

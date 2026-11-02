@@ -1,0 +1,268 @@
+---
+import Base from './Base.astro';
+import GuideBody from '../components/GuideBody.astro';
+import type { GuideEntry, Locale } from '../content/guide-schema';
+import { byPath, relatedEntries } from '../content/guides/index';
+import { GEO, MAP_EMBED, MAP_URL, ORIGIN, REVIEWED_ON, REVIEWED_ON_TEXT, SITE_NAME, groupLabel, urlFor } from '../lib/site';
+
+const { entry, locale } = Astro.props as { entry: GuideEntry; locale: Locale };
+
+const isHub = entry.path === entry.group;
+/**
+ * A generated section hub. The history section is different: its root path is
+ * served by a written content page, so it is not a hub even though the path and
+ * the group id match.
+ */
+const isGeneratedHub = isHub && !byPath(entry.path);
+const url = ORIGIN + urlFor(locale, entry.path);
+const faq = entry.faq?.[locale] ?? [];
+const related = isHub ? [] : relatedEntries(entry);
+const groupHref = urlFor(locale, entry.group);
+const groupText = groupLabel(locale, entry.group);
+
+const hasMapBlock = entry.blocks[locale].some((b) => b.t === 'map');
+const showLocation = Boolean(entry.transport) && !hasMapBlock;
+const locationHref = urlFor(locale, 'visit/location');
+
+const t =
+  locale === 'hi'
+    ? {
+        home: 'मुख्य पृष्ठ',
+        reviewed: 'अंतिम समीक्षा',
+        faqTitle: 'अक्सर पूछे जाने वाले प्रश्न',
+        sources: 'स्रोत और समीक्षा',
+        related: 'आगे पढ़ें',
+        backHome: 'गोलघर मुख्य पृष्ठ',
+        backGroup: 'सभी पृष्ठ: ' + groupText,
+        disclaimer:
+          'यह एक स्वतंत्र यात्रा मार्गदर्शिका है; यह गोलघर के प्रबंधन, पटना जिला प्रशासन या बिहार पर्यटन से संबद्ध नहीं है। टिकट यहाँ नहीं बिकते।',
+        sourceNote:
+          'जहाँ स्रोतों में अंतर है, वहाँ दोनों स्रोत और उनकी तारीख दी गई है। यात्रा से पहले स्थल पर वर्तमान स्थिति जाँचें।',
+        locationTitle: 'स्थान और पहुँच',
+        locationNote:
+          'नक्शा केवल स्थान दिखाता है। प्रवेश द्वार, पार्किंग और यातायात की स्थिति बदलती रहती है, इसलिए निकलने से पहले पुष्टि करें।',
+        locationLink: 'स्थान, प्रवेश और यातायात की पूरी जानकारी',
+        mapLabel: 'गोलघर पटना का मानचित्र',
+        mapCta: 'Google Maps में खोलें'
+      }
+    : {
+        home: 'Home',
+        reviewed: 'Last reviewed',
+        faqTitle: 'Frequently asked questions',
+        sources: 'Sources and review',
+        related: 'Read next',
+        backHome: 'Golghar home',
+        backGroup: 'All pages: ' + groupText,
+        disclaimer:
+          'This is an independent travel guide. It is not connected to the management of Golghar, the Patna district administration or Bihar Tourism, and it does not sell tickets.',
+        sourceNote:
+          'Where sources disagree, both are listed with their dates. Check current conditions on site before travelling.',
+        locationTitle: 'Location and getting there',
+        locationNote:
+          'The map shows the location only. Entrances, parking and traffic conditions change, so confirm before you set out.',
+        locationLink: 'Full location, entrance and transport details',
+        mapLabel: 'Map of Golghar, Patna',
+        mapCta: 'Open in Google Maps'
+      };
+
+const schema: any[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: entry.title[locale],
+    description: entry.description[locale],
+    inLanguage: locale === 'hi' ? 'hi-IN' : 'en',
+    datePublished: REVIEWED_ON,
+    dateModified: REVIEWED_ON,
+    mainEntityOfPage: url,
+    author: { '@type': 'Organization', name: SITE_NAME[locale], url: ORIGIN + '/' },
+    publisher: { '@type': 'Organization', name: SITE_NAME[locale], url: ORIGIN + '/' },
+    isPartOf: { '@type': 'WebSite', '@id': ORIGIN + '/#website' }
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t.home, item: ORIGIN + urlFor(locale) },
+      ...(isHub
+        ? []
+        : [{ '@type': 'ListItem', position: 2, name: groupText, item: ORIGIN + groupHref }]),
+      {
+        '@type': 'ListItem',
+        position: isHub ? 2 : 3,
+        name: entry.h1[locale],
+        item: url
+      }
+    ]
+  }
+];
+
+/**
+ * Structured data for the subject of a detail page. Golghar pages carry the
+ * shared TouristAttraction entity (same @id, address and coordinates as the home
+ * page); pages about another place carry that place as a Place. Only verified
+ * fields are emitted — no opening hours or prices.
+ */
+if (!isGeneratedHub) {
+  const attractionId = ORIGIN + '/#attraction';
+  const subject =
+    entry.group === 'nearby'
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Place',
+          '@id': url + '#place',
+          name: entry.h1[locale],
+          url,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Patna',
+            addressRegion: 'Bihar',
+            addressCountry: 'IN'
+          }
+        }
+      : {
+          '@context': 'https://schema.org',
+          '@type': 'TouristAttraction',
+          '@id': attractionId,
+          name: locale === 'hi' ? 'गोलघर, पटना' : 'Golghar, Patna',
+          alternateName: ['Golghar Patna', 'Gol Ghar', 'गोलघर'],
+          url: ORIGIN + urlFor(locale),
+          geo: { '@type': 'GeoCoordinates', latitude: GEO.lat, longitude: GEO.lng },
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: 'Opp. Govt. Girls High School, Ashok Rajpath Road',
+            addressLocality: 'Patna',
+            addressRegion: 'Bihar',
+            postalCode: '800001',
+            addressCountry: 'IN'
+          },
+          hasMap: MAP_URL
+        };
+
+  schema.push(subject);
+  schema[0].about = { '@id': subject['@id'] };
+}
+
+if (faq.length) {
+  schema.push({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a }
+    }))
+  });
+}
+---
+<Base title={entry.title[locale]} description={entry.description[locale]} lang={locale} altPath={entry.path} {schema}>
+  <article class="section">
+    <div class="shell max-w-4xl">
+      <nav class="crumb" aria-label="Breadcrumb">
+        <a href={urlFor(locale)}>{t.home}</a>
+        {!isHub && <><span aria-hidden="true">/</span><a href={groupHref}>{groupText}</a></>}
+        <span aria-hidden="true">/</span>
+        <span>{entry.h1[locale]}</span>
+      </nav>
+
+      <p class="eyebrow mt-6">{groupText}</p>
+      <h1 class="mt-3 text-[clamp(2.2rem,5.4vw,3.6rem)] font-black leading-[1.06] tracking-[-.03em]">{entry.h1[locale]}</h1>
+      <p class="mt-6 text-xl text-stone-700">{entry.intro[locale]}</p>
+      <p class="mt-4 text-sm text-stone-500">{t.reviewed}: {REVIEWED_ON_TEXT[locale]}</p>
+
+      <GuideBody blocks={entry.blocks[locale]} {locale} />
+
+      {
+        showLocation && (
+          <section class="mt-14 border-t border-stone-300 pt-10">
+            <h2 class="text-[clamp(1.6rem,3.4vw,2.4rem)] font-black leading-tight tracking-[-.02em]">
+              {t.locationTitle}
+            </h2>
+            <p class="mt-5 text-lg text-stone-700">{entry.transport![locale]}</p>
+            <figure class="mt-6">
+              <iframe
+                class="map-frame"
+                title={t.mapLabel}
+                src={MAP_EMBED}
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              />
+              <figcaption class="mt-3 text-sm">
+                <a class="underline" href={MAP_URL} target="_blank" rel="noopener noreferrer">
+                  {t.mapCta}
+                </a>
+              </figcaption>
+            </figure>
+            <p class="note mt-6">{t.locationNote}</p>
+            <p class="mt-6">
+              <a class="btn btn-ghost" href={locationHref}>{t.locationLink}</a>
+            </p>
+          </section>
+        )
+      }
+    </div>
+  </article>
+
+  {
+    faq.length > 0 && (
+      <section id="faq" class="section bg-[#e9dfd0]">
+        <div class="shell max-w-4xl">
+          <h2 class="section-title mt-3 text-3xl">{t.faqTitle}</h2>
+          <div class="faq-list mt-8 divide-y divide-stone-300">
+            {faq.map(({ q, a }) => (
+              <details class="py-5">
+                <summary class="text-lg">{q}</summary>
+                <p class="mt-3 text-stone-700">{a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    related.length > 0 && (
+      <section class="section">
+        <div class="shell max-w-4xl">
+          <h2 class="section-title mt-3 text-3xl">{t.related}</h2>
+          <ul class="mt-6 grid gap-3 sm:grid-cols-2">
+            {related.map((item) => (
+              <li>
+                <a class="link-card" href={urlFor(locale, item.path)}>
+                  <span>{item.h1[locale]}</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section bg-[#e9dfd0]">
+    <div class="shell max-w-4xl legal">
+      <h2>{t.sources}</h2>
+      <p>{t.sourceNote}</p>
+      {
+        entry.sources && entry.sources.length > 0 && (
+          <ul>
+            {entry.sources.map((source) => (
+              <li>
+                <a href={source.url} target="_blank" rel="noopener noreferrer">
+                  {source.label[locale]}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      <p>{t.disclaimer}</p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a class="btn btn-primary" href={urlFor(locale)}>{t.backHome}</a>
+        <a class="btn btn-ghost" href={groupHref}>{t.backGroup}</a>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,641 @@
+---
+import Base from '../layouts/Base.astro';
+import Weather from './Weather.astro';
+import type { Locale } from '../content/guide-schema';
+import {
+  GROUPS,
+  MAP_EMBED,
+  MAP_URL,
+  ORIGIN,
+  REVIEW_COUNT,
+  REVIEWED_ON_TEXT,
+  MAPS_OBSERVED_ON_TEXT,
+  SITE_NAME,
+  GEO,
+  RATING,
+  urlFor
+} from '../lib/site';
+
+const { locale } = Astro.props as { locale: Locale };
+
+type HomeLink = { label: string; path?: string; url?: string };
+type GlanceRow = { label: string; value: string; link: string; path: string };
+type HourRow = { source: string; hours: string; when: string; url: string };
+type Section = { id: string; heading: string; text: string; links: HomeLink[]; map?: boolean };
+type Faq = { q: string; a: string };
+
+type Content = {
+  title: string;
+  description: string;
+  eyebrow: string;
+  h1: string;
+  h1Note: string;
+  lead: string;
+  ctaPrimary: HomeLink;
+  ctaMap: string;
+  heroNote: string;
+  imageAlt: string;
+  stats: { value: string; label: string }[];
+  glance: { eyebrow: string; heading: string; intro: string; rows: GlanceRow[] };
+  hours: { eyebrow: string; heading: string; intro: string; columns: [string, string, string]; rows: HourRow[]; note: string; link: HomeLink };
+  sections: Section[];
+  guide: { eyebrow: string; heading: string; intro: string };
+  weather: { eyebrow: string; heading: string; intro: string; link: HomeLink };
+  faq: { eyebrow: string; heading: string; items: Faq[] };
+  sources: { heading: string; paragraphs: string[]; images: string; legal: string };
+  sectionEyebrow: string;
+  reviewed: string;
+};
+
+const BT_URL = 'https://tourism.bihar.gov.in/';
+const II_URL = 'https://www.incredibleindia.org/';
+const DISTRICT_URL = 'https://patna.nic.in/tourist-place/gol-ghar/';
+const OSM = { lat: GEO.lat, lng: GEO.lng };
+
+const C: Content =
+  locale === 'hi'
+    ? {
+        title: 'गोलघर पटना: कहाँ है, समय, टिकट और इतिहास | 2026 गाइड',
+        description:
+          'गोलघर पटना कहाँ है, दिनांकित खुलने का समय, टिकट की जाँच, 1786 का इतिहास और यात्रा की तैयारी। स्वतंत्र हिंदी मार्गदर्शिका; वर्तमान पहुँच स्थानीय निर्देश से जाँचें।',
+        eyebrow: 'पटना · बिहार · स्वतंत्र हिंदी मार्गदर्शिका',
+        h1: 'गोलघर पटना',
+        h1Note: '(Golghar Patna)',
+        lead: '1786 का ऐतिहासिक अनाजघर—स्थान, इतिहास और यात्रा की तैयारी समझें। खुलने का समय, शुल्क और ऊपर जाने की अनुमति पहले जाँचें।',
+        ctaPrimary: { label: 'यात्रा की जानकारी', path: '#visit' },
+        ctaMap: 'मानचित्र खोलें',
+        heroNote: 'चित्र: मूल सांकेतिक रेखाचित्र; वास्तविक फोटो या मापचित्र नहीं।',
+        imageAlt: 'गोलघर का मूल वैचारिक रेखाचित्र, वास्तविक फोटो नहीं',
+        stats: [
+          { value: '1786', label: 'निर्माण का वर्ष' },
+          { value: '145', label: 'ऐतिहासिक सीढ़ियों का विवरण' },
+          { value: '29 मी.', label: 'लगभग ऊँचाई' },
+          { value: `${RATING} / 5`, label: `Google Maps · ${REVIEW_COUNT} समीक्षाएँ · ${REVIEWED_ON_TEXT.hi} को देखा गया` }
+        ],
+        glance: {
+          eyebrow: 'एक नज़र में',
+          heading: 'गोलघर की यात्रा की मुख्य जानकारी',
+          intro: 'हर पंक्ति के आगे उसका विस्तृत पृष्ठ दिया है। जहाँ स्रोत अलग हैं, वहाँ दोनों तारीख के साथ दिए गए हैं।',
+          rows: [
+            { label: 'स्थान', value: 'अशोक राजपथ, गांधी मैदान के पश्चिम', link: 'स्थान और मानचित्र', path: 'visit/location' },
+            { label: 'खुलने का समय', value: 'स्रोतों में अंतर—नीचे तीनों स्रोत तारीख के साथ देखें', link: 'समय और साप्ताहिक अवकाश', path: 'visit/timings' },
+            { label: 'टिकट', value: 'इस समीक्षा में वर्तमान दर की पुष्टि नहीं', link: 'टिकट और शुल्क जाँचें', path: 'visit/tickets' },
+            { label: 'ऊपर जाना', value: 'ऐतिहासिक रूप से 145 सीढ़ियाँ; ऊपर की वर्तमान अनुमति अपुष्ट', link: 'सीढ़ियों की वर्तमान स्थिति', path: 'visit/staircase-access' },
+            { label: 'पहुँच', value: 'मानचित्र से रास्ता; पटना जंक्शन और हवाई अड्डे से मार्ग', link: 'पटना जंक्शन से कैसे पहुँचें', path: 'visit/patna-junction' },
+            { label: 'आसपास', value: 'संग्रहालय, खान-पान और आधे दिन की योजनाएँ', link: 'आसपास के स्थल', path: 'nearby' }
+          ]
+        },
+        hours: {
+          eyebrow: 'खुलने का समय: तीन स्रोत',
+          heading: 'समय पर स्रोत एक जैसे नहीं',
+          intro: 'नीचे दिए समय सार्वजनिक सूचियों के हैं। ये आज की संचालन-पुष्टि नहीं हैं; स्थल पर जाने से पहले समय जाँचें।',
+          columns: ['स्रोत', 'बताया गया समय', 'कब / कहाँ से'],
+          rows: [
+            { source: 'बिहार पर्यटन — गंतव्य सूची', hours: '09:00–18:00 (प्रवेश निःशुल्क बताया गया)', when: 'सार्वजनिक सूची; सूची में तारीख नहीं दी गई', url: BT_URL },
+            { source: 'Incredible India (पर्यटन मंत्रालय) — प्रविष्टि', hours: '09:30–18:00', when: 'सार्वजनिक सूची; सूची में तारीख नहीं दी गई', url: II_URL },
+            { source: 'Google Maps — सार्वजनिक सूची', hours: '09:00–17:00; सोमवार बंद', when: `${MAPS_OBSERVED_ON_TEXT.hi} को देखा गया`, url: MAP_URL }
+          ],
+          note: 'तीनों स्रोत अलग-अलग हैं, इसलिए यह साइट किसी एक समय को अंतिम नहीं मानती। पहुँचने से पहले स्थल या आधिकारिक पर्यटन सूचना से पुष्टि करें।',
+          link: { label: 'समय और अवकाश का पूरा पृष्ठ', path: 'visit/timings' }
+        },
+        sections: [
+          {
+            id: 'history',
+            heading: '1786 का अनाजघर और पटना की स्मृति',
+            text: 'पटना जिला प्रशासन के अनुसार गोलघर 1770 के अकाल के बाद खाद्यान्न भंडारण के उद्देश्य से बनाया गया था। कैप्टन जॉन गार्स्टिन ने 1786 में ब्रिटिश सेना के लिए इसका निर्माण किया। प्रशासन के इतिहास पृष्ठ का अंतिम अद्यतन 24 अगस्त 2024 दिखता है; इस ऐतिहासिक विवरण को आज की संचालन-सूचना से अलग समझें।',
+            links: [
+              { label: 'गोलघर का इतिहास', path: 'history' },
+              { label: 'वास्तुकला', path: 'architecture' },
+              { label: '1770 का अकाल और अनाजघर', path: 'history/granary-famine' }
+            ]
+          },
+          {
+            id: 'architecture',
+            heading: 'गुंबद और घुमावदार सीढ़ियाँ',
+            text: 'जिला प्रशासन गोलघर को स्तंभ-रहित संरचना बताता है। लगभग 29 मीटर ऊँचाई, आधार पर लगभग 3.6 मीटर मोटी दीवार और 145 सीढ़ियाँ इसकी पहचान हैं। सीढ़ियों का ऐतिहासिक उपयोग ऊपर से अनाज पहुँचाने और दूसरी ओर से उतरने के लिए था। पुराना विवरण आज ऊपर चढ़ने की अनुमति की गारंटी नहीं है।',
+            links: [
+              { label: '145 सीढ़ियों की बनावट', path: 'history/staircases' },
+              { label: 'मरम्मत की स्थिति', path: 'restoration-status' },
+              { label: 'सीढ़ियों की वर्तमान पहुँच', path: 'visit/staircase-access' }
+            ]
+          },
+          {
+            id: 'visit',
+            heading: 'समय, टिकट और पहुँच पहले जाँचें',
+            text: 'Google Maps की 23 अक्टूबर 2026 की सूची में मंगलवार–रविवार 09:00–17:00 और सोमवार बंद है। बिहार पर्यटन और Incredible India की सूचियाँ 18:00 तक का समय बताती हैं। किसी एक सूची को अंतिम न मानें। वर्तमान प्रवेश शुल्क, कार्यक्रम और ऊपरी भाग की पहुँच की पुष्टि इस समीक्षा में नहीं हुई; स्थल के निर्देश देखें।',
+            links: [
+              { label: 'खुलने का समय और अवकाश', path: 'visit/timings' },
+              { label: 'टिकट और शुल्क', path: 'visit/tickets' },
+              { label: 'ऊपर जाना: वर्तमान स्थिति', path: 'visit/staircase-access' }
+            ]
+          },
+          {
+            id: 'facilities',
+            heading: 'अपनी जरूरतों के अनुसार तैयारी',
+            text: 'पानी और मौसम के अनुकूल वस्त्र रखें। शौचालय, बैठने की जगह, व्हीलचेयर-अनुकूल पहुँच या अन्य सुविधा की उपलब्धता पहले जाँचें; यह मार्गदर्शिका इनकी वर्तमान उपलब्धता प्रमाणित नहीं करती। बच्चों के साथ उपलब्ध, अनुमति वाले मार्ग पर रहें और सीढ़ियों पर स्थानीय सुरक्षा निर्देश मानें।',
+            links: [
+              { label: 'पहुँच और गतिशीलता', path: 'visit/accessibility' },
+              { label: 'परिवार के साथ यात्रा', path: 'visit/family-facilities' },
+              { label: 'पार्किंग और आसपास', path: 'visit/parking' }
+            ]
+          },
+          {
+            id: 'transport',
+            heading: 'स्थान और आने-जाने की योजना',
+            text: 'संदर्भ पता गवर्नमेंट गर्ल्स हाई स्कूल के सामने, अशोक राजपथ रोड, पटना 800001 है। प्रस्थान स्थल के अनुसार मानचित्र में रास्ता चुनें। सार्वजनिक परिवहन की लाइन, किराया और पड़ाव वर्तमान सेवा से जाँचें। वाहन से आने पर अधिकृत पार्किंग और स्थानीय संकेत देखें; यात्रा या पैदल चलने का निश्चित समय यहाँ नहीं दिया जाता।',
+            map: true,
+            links: [
+              { label: 'स्थान और प्रवेश', path: 'visit/location' },
+              { label: 'पटना जंक्शन से मार्ग', path: 'visit/patna-junction' },
+              { label: 'हवाई अड्डे से मार्ग', path: 'visit/airport' },
+              { label: 'गांधी मैदान से मार्ग', path: 'visit/gandhi-maidan' }
+            ]
+          },
+          {
+            id: 'plan',
+            heading: 'एक लचीला शहरी भ्रमण',
+            text: 'अपने समय, चलने की क्षमता और मौसम के अनुसार गोलघर को पटना भ्रमण में शामिल करें। आने-जाने और विश्राम के लिए समय रखें। परिसर, सीढ़ियों और आसपास के स्थलों की प्रवेश-शर्तें अलग हो सकती हैं। बिना पुष्टि ऊपर जाने या किसी सेवा के उपलब्ध होने पर योजना निर्भर न रखें।',
+            links: [
+              { label: '90 मिनट की योजना', path: 'itineraries/90-minutes' },
+              { label: 'गोलघर + गांधी मैदान', path: 'itineraries/golghar-gandhi-maidan' },
+              { label: 'पटना: एक दिन', path: 'itineraries/patna-one-day' },
+              { label: 'परिवार के साथ एक दिन', path: 'itineraries/family-day' }
+            ]
+          },
+          {
+            id: 'nearby',
+            heading: 'पटना के अन्य स्थलों के साथ जोड़ना',
+            text: 'जिला प्रशासन का पर्यटन पृष्ठ पटना में अन्य दर्शनीय स्थलों की जानकारी देता है। अपने शुरुआती स्थान और गति के अनुसार अलग-अलग यात्राएँ जोड़ें; गोलघर से हर स्थान तक कम दूरी या तय पैदल समय का अनुमान न लगाएँ। प्रत्येक स्थान का समय और टिकट अलग से जाँचें।',
+            links: [
+              { label: 'गांधी मैदान', path: 'nearby/gandhi-maidan' },
+              { label: 'श्रीकृष्ण विज्ञान केंद्र', path: 'nearby/science-centre' },
+              { label: 'बिहार संग्रहालय', path: 'nearby/bihar-museum' },
+              { label: 'आसपास खान-पान', path: 'food/nearby' }
+            ]
+          },
+          {
+            id: 'about',
+            heading: 'स्वतंत्र सूचना, आधिकारिक संचालन नहीं',
+            text: 'यह स्वतंत्र हिंदी यात्रा मार्गदर्शिका है। यह गोलघर, पटना जिला प्रशासन या बिहार पर्यटन का आधिकारिक प्रतिनिधि नहीं है। मानचित्र की सार्वजनिक रेटिंग तीसरे पक्ष की है। जानकारी और पूर्वानुमान बदल सकते हैं; स्थल के वर्तमान निर्देश प्राथमिक हैं।',
+            links: [
+              { label: 'मरम्मत और पुनः-खोलने की स्थिति', path: 'restoration-status' },
+              { label: 'स्रोत: पटना जिला प्रशासन', url: DISTRICT_URL },
+              { label: 'स्रोत: बिहार पर्यटन', url: BT_URL }
+            ]
+          }
+        ],
+        guide: {
+          eyebrow: 'पूरी मार्गदर्शिका',
+          heading: 'पाँच वर्गों में विस्तृत पृष्ठ',
+          intro: 'हर वर्ग में अपने पृष्ठ हैं। वहाँ से शुरुआत करें जो आपकी यात्रा से मेल खाता हो।'
+        },
+        weather: {
+          eyebrow: 'मौसम और योजना',
+          heading: 'मौसम देखकर यात्रा की तैयारी',
+          intro: 'मौसम का पूर्वानुमान पहनावे और योजना चुनने में मदद करता है, लेकिन यह स्थल के खुला या बंद होने की पुष्टि नहीं है।',
+          link: { label: 'सबसे अच्छा मौसम और मौसम-वार सुझाव', path: 'visit/best-season' }
+        },
+        faq: {
+          eyebrow: 'अक्सर पूछे जाने वाले प्रश्न',
+          heading: 'गोलघर की यात्रा से पहले',
+          items: [
+            { q: 'गोलघर पटना कहाँ है?', a: 'गोलघर पटना, बिहार में अशोक राजपथ रोड क्षेत्र में, गांधी मैदान के पश्चिम में है। मानचित्र का पता: गवर्नमेंट गर्ल्स हाई स्कूल के सामने, पटना, बिहार 800001। स्थान का संदर्भ बिंदु 25.620337, 85.139448 है; यह पार्किंग या प्रवेश-द्वार की गारंटी नहीं है।' },
+            { q: 'गोलघर का समय और साप्ताहिक अवकाश क्या है?', a: '23 अक्टूबर 2026 को देखे गए Google Maps विवरण में मंगलवार से रविवार 09:00–17:00 और सोमवार बंद दिखाया गया। बिहार पर्यटन की गंतव्य सूची 09:00–18:00 और Incredible India की प्रविष्टि 09:30–18:00 बताती है। ये तीनों सार्वजनिक सूचियाँ अलग-अलग हैं; किसी को अंतिम न मानें। यात्रा से पहले स्थल या आधिकारिक पर्यटन सूचना से समय और पहुँच जाँचें।' },
+            { q: 'गोलघर का टिकट कितना है?', a: 'इस समीक्षा में वर्तमान आधिकारिक टिकट-दर की पुष्टि नहीं हो सकी। पुराने स्रोत-पाठ के निःशुल्क प्रवेश दावे को आज की गारंटी न मानें। परिसर, सीढ़ियों, कार्यक्रम या किसी अलग सुविधा के लागू शुल्क स्थल पर जाँचें। यह साइट टिकट नहीं बेचती।' },
+            { q: 'क्या गोलघर की सीढ़ियों से ऊपर जा सकते हैं?', a: 'इस समीक्षा में ऊपर जाने की वर्तमान अनुमति की पुष्टि नहीं हो सकी। 2026 की मरम्मत-रिपोर्टों में लंबे समय से सीढ़ियों पर प्रतिबंध का ज़िक्र है और पुनः-खोलने की योजना बताई गई है। ऐतिहासिक 145 सीढ़ियों का विवरण आज की अनुमति नहीं है; स्थल पर वर्तमान स्थिति जाँचें।' },
+            { q: 'गोलघर किसने और कब बनवाया?', a: 'पटना जिला प्रशासन के इतिहास विवरण के अनुसार कैप्टन जॉन गार्स्टिन ने ब्रिटिश सेना के लिए 1786 में यह अनाजघर बनाया था। यह 1770 के अकाल के बाद की खाद्यान्न-भंडारण योजना से जुड़ा था।' },
+            { q: 'गोलघर में कितनी सीढ़ियाँ हैं?', a: 'पटना जिला प्रशासन 145 घुमावदार सीढ़ियों का उल्लेख करता है। यह वास्तु का ऐतिहासिक विवरण है, ऊपर चढ़ने की वर्तमान अनुमति नहीं। प्रवेश और सीढ़ियों की स्थिति स्थानीय निर्देश से जाँचें।' },
+            { q: 'गोलघर कितना ऊँचा है?', a: 'जिला प्रशासन के विवरण में ऊँचाई लगभग 29 मीटर और आधार पर दीवार की मोटाई लगभग 3.6 मीटर बताई गई है। भवन स्तंभ-रहित अनाजघर के रूप में वर्णित है।' },
+            { q: 'क्या मौसम देखकर सीढ़ियाँ खुली होने का पता चलता है?', a: 'नहीं। मौसम प्रदाता का पूर्वानुमान स्थल की अनुमति, सुरक्षा निरीक्षण या सीढ़ियों की उपलब्धता की पुष्टि नहीं करता। स्थानीय निर्देश और संकेतों को प्राथमिकता दें।' }
+          ]
+        },
+        sources: {
+          heading: 'स्रोत और समीक्षा',
+          paragraphs: [
+            `समीक्षा: ${REVIEWED_ON_TEXT.hi}। इतिहास: पटना जिला प्रशासन। खुलने का समय और सार्वजनिक रेटिंग: दिनांकित Google Maps सूची। वर्तमान पर्यटन सूचना: बिहार पर्यटन और Incredible India। अंतिम दो लिंक आधिकारिक सूचना के प्रवेश-बिंदु हैं; यहाँ आज की टिकट-दर या ऊपरी भाग की अनुमति पुष्ट नहीं है।`,
+            `Google Maps की सार्वजनिक रेटिंग और समीक्षा-संख्या तीसरे पक्ष की सूची से ${REVIEWED_ON_TEXT.hi} को देखी गई; ये बदल सकती हैं।`
+          ],
+          images: 'सभी चित्र इस मार्गदर्शिका के मूल SVG रेखाचित्र हैं। पहले प्रयुक्त फोटो की वर्तमान पहचान और लाइसेंस की पुष्टि न होने पर उन्हें हटाया गया है।',
+          legal: 'यह एक स्वतंत्र यात्रा मार्गदर्शिका है; यह गोलघर के प्रबंधन, पटना जिला प्रशासन या बिहार पर्यटन से संबद्ध नहीं है.'
+        },
+        sectionEyebrow: 'गोलघर यात्रा मार्गदर्शिका',
+        reviewed: 'अंतिम समीक्षा'
+      }
+    : {
+        title: 'Golghar Patna: Where It Is, Timings, Tickets and History | 2026 Guide',
+        description:
+          'Where Golghar Patna is, a dated look at opening hours, how to check tickets, its 1786 history and how to prepare a visit. Independent English guide; check current access on site.',
+        eyebrow: 'Patna · Bihar · Independent English guide',
+        h1: 'Golghar Patna',
+        h1Note: '(गोलघर)',
+        lead: 'The historic 1786 granary. Understand where it is, its history and how to prepare. Check the opening hours, fees and whether the top is open before you go.',
+        ctaPrimary: { label: 'Visiting information', path: '#visit' },
+        ctaMap: 'Open map',
+        heroNote: 'Image: an original illustrative drawing; not a photograph or measured plan.',
+        imageAlt: 'Illustrative drawing of Golghar, not a photograph',
+        stats: [
+          { value: '1786', label: 'Year built' },
+          { value: '145', label: 'Historical stair description' },
+          { value: '29 m', label: 'Approximate height' },
+          { value: `${RATING} / 5`, label: `Google Maps · ${REVIEW_COUNT} reviews · checked ${REVIEWED_ON_TEXT.en}` }
+        ],
+        glance: {
+          eyebrow: 'At a glance',
+          heading: 'Key facts for visiting Golghar',
+          intro: 'Each row links to a fuller page. Where sources disagree, both are shown with their dates.',
+          rows: [
+            { label: 'Location', value: 'Ashok Rajpath, west of Gandhi Maidan', link: 'Location and map', path: 'visit/location' },
+            { label: 'Opening hours', value: 'Sources differ — see all three with dates below', link: 'Hours and weekly closure', path: 'visit/timings' },
+            { label: 'Tickets', value: 'Current rates could not be confirmed in this review', link: 'Check tickets and fees', path: 'visit/tickets' },
+            { label: 'Going up', value: 'Historically 145 steps; current access to the top is unconfirmed', link: 'Current staircase access', path: 'visit/staircase-access' },
+            { label: 'Getting there', value: 'Route by map; from Patna Junction and the airport', link: 'How to get there from Patna Junction', path: 'visit/patna-junction' },
+            { label: 'Nearby', value: 'Museums, food and half-day plans', link: 'Places nearby', path: 'nearby' }
+          ]
+        },
+        hours: {
+          eyebrow: 'Opening hours: three sources',
+          heading: 'The sources do not agree on the hours',
+          intro: 'The times below come from public listings. They are not a live confirmation; check before you travel.',
+          columns: ['Source', 'Listed hours', 'When / where from'],
+          rows: [
+            { source: 'Bihar Tourism — destination listing', hours: '09:00–18:00 (entry described as free)', when: 'Public listing; does not state a date', url: BT_URL },
+            { source: 'Incredible India (Ministry of Tourism) — entry', hours: '09:30–18:00', when: 'Public listing; does not state a date', url: II_URL },
+            { source: 'Google Maps — public listing', hours: '09:00–17:00; closed Monday', when: `Observed ${MAPS_OBSERVED_ON_TEXT.en}`, url: MAP_URL }
+          ],
+          note: 'The three sources differ, so this site does not treat any single time as final. Confirm with the site or official tourism information before you set out.',
+          link: { label: 'The full page on hours and closure', path: 'visit/timings' }
+        },
+        sections: [
+          {
+            id: 'history',
+            heading: 'The 1786 granary and Patna’s memory',
+            text: 'According to the Patna district administration, Golghar was built to store grain after the 1770 famine. Captain John Garstin had it built for the British army in 1786. The administration’s history page appears to have been last updated on 24 August 2024; treat that historical account as separate from today’s operating information.',
+            links: [
+              { label: 'History of Golghar', path: 'history' },
+              { label: 'Architecture', path: 'architecture' },
+              { label: 'The 1770 famine and the granary', path: 'history/granary-famine' }
+            ]
+          },
+          {
+            id: 'architecture',
+            heading: 'The dome and the winding stairs',
+            text: 'The district administration describes Golghar as a structure without pillars. Its identity lies in a height of about 29 metres, walls about 3.6 metres thick at the base and 145 steps. Historically the stairs were used to carry grain up one way and to descend the other. That old description is not a guarantee that the top is open today.',
+            links: [
+              { label: 'How the 145 steps are built', path: 'history/staircases' },
+              { label: 'Restoration status', path: 'restoration-status' },
+              { label: 'Current staircase access', path: 'visit/staircase-access' }
+            ]
+          },
+          {
+            id: 'visit',
+            heading: 'Check the hours, tickets and access first',
+            text: 'The Google Maps listing observed on 23 October 2026 showed 09:00–17:00 Tuesday to Sunday and closed on Monday. Bihar Tourism and Incredible India give times up to 18:00. Do not treat any single listing as final. This review could not confirm the current entry fee, any events, or access to the upper part; follow the site’s instructions.',
+            links: [
+              { label: 'Opening hours and closure', path: 'visit/timings' },
+              { label: 'Tickets and fees', path: 'visit/tickets' },
+              { label: 'Going up: current status', path: 'visit/staircase-access' }
+            ]
+          },
+          {
+            id: 'facilities',
+            heading: 'Prepare for your own needs',
+            text: 'Carry water and clothing suited to the weather. Check the availability of toilets, seating, wheelchair-friendly access or other facilities beforehand; this guide does not certify their current availability. With children, stay on the available, permitted route and follow local safety instructions on the stairs.',
+            links: [
+              { label: 'Access and mobility', path: 'visit/accessibility' },
+              { label: 'Visiting with family', path: 'visit/family-facilities' },
+              { label: 'Parking and surroundings', path: 'visit/parking' }
+            ]
+          },
+          {
+            id: 'transport',
+            heading: 'Location and planning your journey',
+            text: 'The reference address is Opp. Govt. Girls High School, Ashok Rajpath Road, Patna 800001. Plan your route on the map from wherever you start. Check public transport lines, fares and stops against the current service. If you come by vehicle, look for authorised parking and local signs; no fixed travel or walking time is given here.',
+            map: true,
+            links: [
+              { label: 'Location and entrance', path: 'visit/location' },
+              { label: 'Route from Patna Junction', path: 'visit/patna-junction' },
+              { label: 'Route from the airport', path: 'visit/airport' },
+              { label: 'Route from Gandhi Maidan', path: 'visit/gandhi-maidan' }
+            ]
+          },
+          {
+            id: 'plan',
+            heading: 'A flexible city visit',
+            text: 'Fit Golghar into your Patna visit according to your time, how far you can walk and the season. Allow time for travel and rest. Entry conditions for the grounds, the stairs and nearby places can differ. Do not build a plan on reaching the top or on a service being available without confirming first.',
+            links: [
+              { label: 'A 90-minute plan', path: 'itineraries/90-minutes' },
+              { label: 'Golghar + Gandhi Maidan', path: 'itineraries/golghar-gandhi-maidan' },
+              { label: 'Patna in one day', path: 'itineraries/patna-one-day' },
+              { label: 'A family day', path: 'itineraries/family-day' }
+            ]
+          },
+          {
+            id: 'nearby',
+            heading: 'Joining it to other places in Patna',
+            text: 'The district administration’s tourism page lists other places to see in Patna. Add separate trips according to where you start and your pace; do not assume every place is a short distance or a fixed walk from Golghar. Check each place’s hours and tickets separately.',
+            links: [
+              { label: 'Gandhi Maidan', path: 'nearby/gandhi-maidan' },
+              { label: 'Shrikrishna Science Centre', path: 'nearby/science-centre' },
+              { label: 'Bihar Museum', path: 'nearby/bihar-museum' },
+              { label: 'Food nearby', path: 'food/nearby' }
+            ]
+          },
+          {
+            id: 'about',
+            heading: 'Independent information, not official operations',
+            text: 'This is an independent English travel guide. It is not an official representative of Golghar, the Patna district administration or Bihar Tourism. The map rating is a third-party figure. Information and forecasts can change; the site’s current instructions come first.',
+            links: [
+              { label: 'Repairs and reopening status', path: 'restoration-status' },
+              { label: 'Source: Patna district administration', url: DISTRICT_URL },
+              { label: 'Source: Bihar Tourism', url: BT_URL }
+            ]
+          }
+        ],
+        guide: {
+          eyebrow: 'The full guide',
+          heading: 'Detailed pages in five sections',
+          intro: 'Each section has its own pages. Start with the one that matches your trip.'
+        },
+        weather: {
+          eyebrow: 'Weather and planning',
+          heading: 'Using the weather to plan a visit',
+          intro: 'A forecast helps you choose clothing and a plan, but it is not a confirmation that the site or the stairs are open.',
+          link: { label: 'Best season and weather-based tips', path: 'visit/best-season' }
+        },
+        faq: {
+          eyebrow: 'Frequently asked questions',
+          heading: 'Before you visit Golghar',
+          items: [
+            { q: 'Where is Golghar Patna?', a: 'Golghar Patna is in the Ashok Rajpath Road area of Bihar, west of Gandhi Maidan. The map address is Opp. Govt. Girls High School, Patna, Bihar 800001. The reference point is 25.620337, 85.139448; this is not a guarantee of parking or a specific entrance.' },
+            { q: 'What are Golghar’s hours and weekly closure?', a: 'The Google Maps listing observed on 23 October 2026 showed 09:00–17:00 Tuesday to Sunday, closed on Monday. Bihar Tourism’s destination listing gives 09:00–18:00 and the Incredible India entry gives 09:30–18:00. These three public listings differ, so treat none as final. Check the site or official tourism information before you travel.' },
+            { q: 'What does a Golghar ticket cost?', a: 'This review could not confirm the current official ticket rate. Do not treat older free-entry claims as today’s guarantee. Check the fees that apply to the grounds, the stairs, any event or any separate facility on site. This site does not sell tickets.' },
+            { q: 'Can you go up Golghar’s stairs?', a: 'This review could not confirm that the top is currently open. 2026 repair reports mention a long-standing restriction on the stairs and plans to reopen them. The historical description of 145 steps is not today’s permission; check the current situation on site.' },
+            { q: 'Who built Golghar and when?', a: 'According to the Patna district administration’s history account, Captain John Garstin had the granary built for the British army in 1786. It was connected to a grain-storage plan after the 1770 famine.' },
+            { q: 'How many steps does Golghar have?', a: 'The Patna district administration mentions 145 winding steps. That is a historical description of the architecture, not today’s permission to climb. Check the entrance and the condition of the stairs through local instructions.' },
+            { q: 'How tall is Golghar?', a: 'The district administration’s account gives a height of about 29 metres and walls about 3.6 metres thick at the base. The building is described as a granary without pillars.' },
+            { q: 'Does the weather tell me whether the stairs are open?', a: 'No. A weather provider’s forecast does not confirm the site’s permission, safety inspections or the availability of the stairs. Local instructions and signs come first.' }
+          ]
+        },
+        sources: {
+          heading: 'Sources and review',
+          paragraphs: [
+            `Reviewed on ${REVIEWED_ON_TEXT.en}. History: Patna district administration. Opening hours and public rating: a dated Google Maps listing. Current tourism information: Bihar Tourism and Incredible India. The last two links are entry points to official information; they do not confirm today’s ticket rate or access to the upper part.`,
+            `The Google Maps public rating and review count were observed from a third-party listing on ${REVIEWED_ON_TEXT.en}; they can change.`
+          ],
+          images: 'All images are original SVG drawings made for this guide. Earlier photographs were removed because their current identity and licence could not be confirmed.',
+          legal: 'This is an independent travel guide; it is not connected to the management of Golghar, the Patna district administration or Bihar Tourism.'
+        },
+        sectionEyebrow: 'Golghar travel guide',
+        reviewed: 'Last reviewed'
+      };
+
+const faq = C.faq.items;
+
+const href = (link: HomeLink): string => link.url ?? urlFor(locale, (link.path ?? '').replace(/^#/, ''));
+
+const schema: any[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'TouristAttraction',
+    '@id': ORIGIN + '/#attraction',
+    name: locale === 'hi' ? 'गोलघर, पटना' : 'Golghar, Patna',
+    alternateName: ['Golghar Patna', 'Gol Ghar', 'गोलघर'],
+    url: ORIGIN + urlFor(locale),
+    description: C.description,
+    geo: { '@type': 'GeoCoordinates', latitude: OSM.lat, longitude: OSM.lng },
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Opp. Govt. Girls High School, Ashok Rajpath Road',
+      addressLocality: 'Patna',
+      addressRegion: 'Bihar',
+      postalCode: '800001',
+      addressCountry: 'IN'
+    },
+    hasMap: MAP_URL
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': ORIGIN + '/#website',
+    url: ORIGIN + urlFor(locale),
+    name: SITE_NAME[locale],
+    inLanguage: locale === 'hi' ? 'hi-IN' : 'en'
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } }))
+  }
+];
+---
+<Base title={C.title} description={C.description} lang={locale} altPath="" {schema}>
+  <section class="relative overflow-hidden bg-[#201f1a] text-white">
+    <div class="absolute inset-0 opacity-45">
+      <img class="photo" src="/images/golghar-hero.svg" alt={C.imageAlt} width="1200" height="800" fetchpriority="high" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent"></div>
+    <div class="shell relative grid min-h-[640px] items-end gap-10 py-20 lg:grid-cols-[1.1fr_.8fr]">
+      <div>
+        <p class="text-sm font-bold text-[#e7c785]">{C.eyebrow}</p>
+        <h1 class="mt-4 text-6xl font-black leading-tight md:text-8xl">
+          {C.h1} <span class="text-3xl font-bold text-stone-300 md:text-5xl">{C.h1Note}</span>
+        </h1>
+        <p class="mt-6 max-w-2xl text-xl text-stone-200">{C.lead}</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a class="btn hero-light" href="#visit">{C.ctaPrimary.label}</a>
+          <a class="btn btn-ghost" href={MAP_URL} target="_blank" rel="noopener noreferrer">{C.ctaMap}</a>
+        </div>
+        <p class="mt-6 text-xs text-stone-200">{C.heroNote}</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        {C.stats.map((stat) => (
+          <div class="rounded-3xl bg-white/10 p-5">
+            <strong class="text-3xl">{stat.value}</strong>
+            <span class="block">{stat.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="glance" class="section">
+    <div class="shell">
+      <p class="eyebrow">{C.glance.eyebrow}</p>
+      <h2 class="section-title mt-3">{C.glance.heading}</h2>
+      <p class="mt-5 max-w-3xl text-lg text-stone-700">{C.glance.intro}</p>
+      <div class="mt-8 overflow-x-auto">
+        <table class="data-table">
+          <tbody>
+            {C.glance.rows.map((row) => (
+              <tr>
+                <th scope="row" class="w-40">{row.label}</th>
+                <td>{row.value}</td>
+                <td class="w-64">
+                  <a class="underline" href={urlFor(locale, row.path)}>{row.link}</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="hours" class="section bg-[#e9dfd0]">
+    <div class="shell">
+      <p class="eyebrow">{C.hours.eyebrow}</p>
+      <h2 class="section-title mt-3">{C.hours.heading}</h2>
+      <p class="mt-5 max-w-3xl text-lg text-stone-700">{C.hours.intro}</p>
+      <div class="mt-8 overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">{C.hours.columns[0]}</th>
+              <th scope="col">{C.hours.columns[1]}</th>
+              <th scope="col">{C.hours.columns[2]}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {C.hours.rows.map((row) => (
+              <tr>
+                <td>
+                  <a class="underline" href={row.url} target="_blank" rel="noopener noreferrer">{row.source}</a>
+                </td>
+                <td><strong>{row.hours}</strong></td>
+                <td class="text-sm muted">{row.when}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note mt-6">{C.hours.note}</p>
+      <p class="mt-6">
+        <a class="btn btn-primary" href={urlFor(locale, C.hours.link.path!)}>{C.hours.link.label}</a>
+      </p>
+    </div>
+  </section>
+
+  {C.sections.map((section, i) => (
+    <section id={section.id} class={`section ${i % 2 ? 'bg-[#e9dfd0]' : ''}`}>
+      <div class="shell grid gap-9 lg:grid-cols-[1.1fr_.8fr]">
+        <article>
+          <p class="eyebrow">{C.sectionEyebrow}</p>
+          <h2 class="section-title mt-3">{section.heading}</h2>
+          <p class="mt-6 text-lg text-stone-700">{section.text}</p>
+
+          {section.id === 'transport' && (
+            <p class="mt-4">
+              <span>{locale === 'hi' ? 'स्थान बिंदु: ' : 'Reference point: '}</span>
+              <bdi dir="ltr">25.620337, 85.139448</bdi>
+              <a class="ml-3 underline" href={MAP_URL} target="_blank" rel="noopener noreferrer">{C.ctaMap}</a>
+            </p>
+          )}
+
+          {section.map && (
+            <figure class="mt-6">
+              <iframe class="map-frame" title={locale === 'hi' ? 'गोलघर पटना का मानचित्र' : 'Map of Golghar, Patna'} src={MAP_EMBED} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </figure>
+          )}
+
+          <ul class="mt-6 grid gap-3 sm:grid-cols-2">
+            {section.links.map((link) => (
+              <li>
+                <a class="link-card" href={href(link)} {...(link.url ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                  <span>{link.label}</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          {section.id === 'history' && (
+            <p class="mt-4">
+              <a class="underline" href={DISTRICT_URL} target="_blank" rel="noopener noreferrer">
+                {locale === 'hi' ? 'पटना जिला प्रशासन — गोलघर का इतिहास' : 'Patna district administration — Golghar history'}
+              </a>
+            </p>
+          )}
+        </article>
+        <figure class="card overflow-hidden">
+          <img
+            src={'/images/golghar-' + (i % 2 ? 'stairs' : 'wide') + '.svg'}
+            alt={locale === 'hi' ? 'गोलघर की आकृति का मूल वैचारिक चित्र, फोटो नहीं' : 'Illustrative drawing of Golghar, not a photograph'}
+            width="1200"
+            height="800"
+            loading="lazy"
+            class="w-full"
+          />
+          <figcaption class="p-4 text-xs muted">
+            {locale === 'hi' ? 'मूल सांकेतिक चित्र; वास्तु का सटीक मापचित्र या वर्तमान दृश्य नहीं।' : 'Original illustrative drawing; not a precise plan or a current view.'}
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+  ))}
+
+  <section class="section bg-[#e9dfd0]">
+    <div class="shell">
+      <p class="eyebrow">{C.guide.eyebrow}</p>
+      <h2 class="section-title mt-3">{C.guide.heading}</h2>
+      <p class="mt-5 max-w-3xl text-lg text-stone-700">{C.guide.intro}</p>
+      <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {GROUPS.map((group) => (
+          <a class="card block p-6 no-underline" href={urlFor(locale, group.id)}>
+            <strong class="text-lg font-black">{group.label[locale]}</strong>
+            <span class="mt-2 block text-sm muted">{group.intro[locale]}</span>
+            <span aria-hidden="true" class="mt-3 block text-sm font-bold text-[#8f4e36]">→</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="shell max-w-3xl">
+      <p class="eyebrow">{C.weather.eyebrow}</p>
+      <h2 class="section-title mt-3">{C.weather.heading}</h2>
+      <p class="mt-5 text-lg text-stone-700">{C.weather.intro}</p>
+      <p class="mt-4">
+        <a class="underline" href={urlFor(locale, C.weather.link.path!)}>{C.weather.link.label}</a>
+      </p>
+    </div>
+  </section>
+
+  <div id={locale === 'hi' ? 'मौसम-रणनीति' : 'weather-section'}>
+    <Weather locale={locale} />
+  </div>
+
+  <section id="faq" class="section">
+    <div class="shell max-w-4xl">
+      <p class="eyebrow">{C.faq.eyebrow}</p>
+      <h2 class="section-title mt-3">{C.faq.heading}</h2>
+      <div class="faq-list mt-8 divide-y divide-stone-300">
+        {faq.map(({ q, a }) => (
+          <details class="py-5">
+            <summary class="text-lg">{q}</summary>
+            <p class="mt-3 text-stone-700">{a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-[#e9dfd0]">
+    <div class="shell legal">
+      <h2>{C.sources.heading}</h2>
+      <p class="mt-2 text-sm muted">{C.reviewed}: {REVIEWED_ON_TEXT[locale]}</p>
+      {C.sources.paragraphs.map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
+      <p>{C.sources.images}</p>
+      <p>{C.sources.legal}</p>
+      <p class="mt-4">
+        <a href={urlFor(locale, 'visit/timings')}>{locale === 'hi' ? 'समय और अवकाश' : 'Hours and closure'}</a> ·{' '}
+        <a href={urlFor(locale, 'visit/staircase-access')}>{locale === 'hi' ? 'सीढ़ियों की स्थिति' : 'Staircase access'}</a> ·{' '}
+        <a href={urlFor(locale, 'cookies')}>{locale === 'hi' ? 'विश्लेषण की पसंद' : 'Analytics choice'}</a> ·{' '}
+        <a href={urlFor(locale, 'privacy')}>{locale === 'hi' ? 'गोपनीयता' : 'Privacy'}</a> ·{' '}
+        <a href={urlFor(locale, 'terms')}>{locale === 'hi' ? 'उपयोग की शर्तें' : 'Terms'}</a>
+      </p>
+    </div>
+  </section>
+</Base>

@@ -1,3 +1,5 @@
+import type { Locale } from '../content/guide-schema';
+
 const WM: Record<number, [string, string]> = {
   0: ['☀️', 'साफ़ आसमान'],
   1: ['🌤️', 'अधिकतर साफ़'],
@@ -28,19 +30,57 @@ const WM: Record<number, [string, string]> = {
   96: ['⛈️', 'तूफान, ओले संभव'],
   99: ['⛈️', 'भारी तूफान, ओले संभव']
 };
-const wmInfo = (code: number): [string, string] => WM[code] || ['🌡️', 'विवरण उपलब्ध नहीं'];
 
-const fmtDay = (date: string): string => {
-  const dt = new Date(date + 'T12:00:00Z');
-  return dt.toLocaleDateString('hi-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone:'UTC' });
+const WM_EN: Record<number, [string, string]> = {
+  0: ['☀️', 'Clear sky'],
+  1: ['🌤️', 'Mainly clear'],
+  2: ['⛅', 'Partly cloudy'],
+  3: ['☁️', 'Overcast'],
+  45: ['🌫️', 'Fog'],
+  48: ['🌫️', 'Depositing rime fog'],
+  51: ['🌦️', 'Light drizzle'],
+  53: ['🌦️', 'Drizzle'],
+  55: ['🌦️', 'Dense drizzle'],
+  56: ['🌧️', 'Light freezing drizzle'],
+  57: ['🌧️', 'Freezing drizzle'],
+  61: ['🌧️', 'Light rain'],
+  63: ['🌧️', 'Rain'],
+  65: ['🌧️', 'Heavy rain'],
+  66: ['🌧️', 'Light freezing rain'],
+  67: ['🌧️', 'Freezing rain'],
+  71: ['🌨️', 'Light snowfall'],
+  73: ['🌨️', 'Snowfall'],
+  75: ['🌨️', 'Heavy snowfall'],
+  77: ['🌨️', 'Snow grains'],
+  80: ['🌧️', 'Light rain showers'],
+  81: ['🌧️', 'Rain showers'],
+  82: ['🌧️', 'Violent rain showers'],
+  85: ['🌨️', 'Light snow showers'],
+  86: ['🌨️', 'Snow showers'],
+  95: ['⛈️', 'Thunderstorm'],
+  96: ['⛈️', 'Thunderstorm with hail'],
+  99: ['⛈️', 'Severe thunderstorm with hail']
 };
 
-export const nowHtml = (d: any): string => {
+const wmInfo = (code: number, locale: Locale): [string, string] =>
+  (locale === 'en' ? WM_EN[code] : WM[code]) || ['🌡️', locale === 'en' ? 'No description available' : 'विवरण उपलब्ध नहीं'];
+
+const fmtDay = (date: string, locale: Locale): string => {
+  const dt = new Date(date + 'T12:00:00Z');
+  return dt.toLocaleDateString(locale === 'en' ? 'en-IN' : 'hi-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+};
+
+export const nowHtml = (d: any, locale: Locale = 'hi'): string => {
   const c = d.current;
   const dl = d.daily;
-  const ic = wmInfo(c.weather_code);
+  const ic = wmInfo(c.weather_code, locale);
   const uv = (dl.uv_index_max && dl.uv_index_max[0] != null) ? Math.round(dl.uv_index_max[0]) : '—';
   const pr = (dl.precipitation_probability_max && dl.precipitation_probability_max[0] != null) ? String(dl.precipitation_probability_max[0]) + '%' : '—';
+  const L = locale === 'en'
+    ? { feels: 'Feels like', humidity: 'Humidity', wind: 'Wind', uv: 'UV', chance: 'Chance of rain', rain: 'Rainfall', provider: 'Provider time' }
+    : { feels: 'महसूस', humidity: 'नमी', wind: 'हवा', uv: 'UV', chance: 'वर्षा की संभावना', rain: 'वर्षा', provider: 'प्रदाता का समय' };
+  const windUnit = locale === 'en' ? ' km/h' : ' किमी/घं';
+  const rainUnit = locale === 'en' ? ' mm' : ' मिमी';
   return (
     '<div class="flex flex-wrap items-center gap-5">' +
       '<span class="text-6xl leading-none">' + ic[0] + '</span>' +
@@ -48,27 +88,27 @@ export const nowHtml = (d: any): string => {
       '<span class="mt-1 block font-bold text-[#236d72]">' + ic[1] + '</span></div>' +
     '</div>' +
     '<div class="mt-5 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">' +
-      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">महसूस</span><strong class="text-[#1d241f]">' + Math.round(c.apparent_temperature) + '°C</strong></div>' +
-      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">नमी</span><strong class="text-[#1d241f]">' + c.relative_humidity_2m + '%</strong></div>' +
-      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">हवा</span><strong class="text-[#1d241f]">' + Math.round(c.wind_speed_10m) + ' किमी/घं</strong></div>' +
-      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">UV</span><strong class="text-[#1d241f]">' + uv + '</strong></div>' +
-      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">वर्षा की संभावना</span><strong class="text-[#1d241f]">' + pr + '</strong></div>' +
-      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">वर्षा</span><strong class="text-[#1d241f]">' + (c.precipitation || 0) + ' मिमी</strong></div>' +
-    '</div><p class="mt-4 text-xs">प्रदाता का समय: ' + c.time.replace('T',' ') + ' · Asia/Kolkata (UTC+5:30)</p>'
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">' + L.feels + '</span><strong class="text-[#1d241f]">' + Math.round(c.apparent_temperature) + '°C</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">' + L.humidity + '</span><strong class="text-[#1d241f]">' + c.relative_humidity_2m + '%</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">' + L.wind + '</span><strong class="text-[#1d241f]">' + Math.round(c.wind_speed_10m) + windUnit + '</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">' + L.uv + '</span><strong class="text-[#1d241f]">' + uv + '</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">' + L.chance + '</span><strong class="text-[#1d241f]">' + pr + '</strong></div>' +
+      '<div class="rounded-xl bg-white p-3"><span class="block text-xs text-stone-500">' + L.rain + '</span><strong class="text-[#1d241f]">' + (c.precipitation || 0) + rainUnit + '</strong></div>' +
+    '</div><p class="mt-4 text-xs">' + L.provider + ': ' + c.time.replace('T',' ') + ' · Asia/Kolkata (UTC+5:30)</p>'
   );
 };
 
-export const daysHtml = (d: any): string => {
+export const daysHtml = (d: any, locale: Locale = 'hi'): string => {
   const dl = d.daily;
   if (!dl || !dl.time) return '';
   let items = '';
   dl.time.forEach((date: string, i: number) => {
-    const w = wmInfo(dl.weather_code[i]);
+    const w = wmInfo(dl.weather_code[i], locale);
     const pr = (dl.precipitation_probability_max && dl.precipitation_probability_max[i] != null)
       ? String(dl.precipitation_probability_max[i]) + '%' : '—';
     items +=
       '<li class="flex items-center justify-between gap-3 py-3">' +
-        '<span class="w-24 shrink-0 font-black">' + fmtDay(date) + '</span>' +
+        '<span class="w-24 shrink-0 font-black">' + fmtDay(date, locale) + '</span>' +
         '<span class="shrink-0" aria-hidden="true">' + w[0] + '</span>' +
         '<span class="flex-1 truncate text-stone-600">' + w[1] + '</span>' +
         '<span class="shrink-0 font-bold">' + Math.round(dl.temperature_2m_min[i]) + '° / ' + Math.round(dl.temperature_2m_max[i]) + '°</span>' +
@@ -96,7 +136,8 @@ const beaufort = (kmh: number): number => {
 };
 
 // मौसम-आधारित स्मार्ट सुझाव — केवल लागू होने वाले आइटम दे।
-export const buildAdvice = (d: any): { outfit: string[]; plan: string[]; items: string[]; risk: string[] } => {
+export const buildAdvice = (d: any, locale: Locale = 'hi'): { outfit: string[]; plan: string[]; items: string[]; risk: string[] } => {
+  const hi = locale === 'hi';
   const c = d.current;
   const dl = d.daily;
   const code = c.weather_code;
@@ -120,51 +161,51 @@ export const buildAdvice = (d: any): { outfit: string[]; plan: string[]; items: 
 
   // वर्षा
   if (prToday >= 60 || isModRain || isHeavyRain) {
-    outfit.push('बारिश की संभावना है—पानी रोकने वाले कपड़े या रेनकोट बेहतर रहेंगे।');
-    plan.push('अंदर के स्थान (जैसे संग्रहालय) प्राथमिकता दें; गीली बाहरी सीढ़ियाँ फिसलन भरी हो सकती हैं।');
-    items.push('छाता / रेनकोट');
+    outfit.push(hi ? 'बारिश की संभावना है—पानी रोकने वाले कपड़े या रेनकोट बेहतर रहेंगे।' : 'Rain is likely — a waterproof layer or raincoat will help.');
+    plan.push(hi ? 'अंदर के स्थान (जैसे संग्रहालय) प्राथमिकता दें; गीली बाहरी सीढ़ियाँ फिसलन भरी हो सकती हैं।' : 'Prefer indoor stops such as a museum; wet outdoor steps can be slippery.');
+    items.push(hi ? 'छाता / रेनकोट' : 'Umbrella / raincoat');
   } else if (isLightRain) {
-    plan.push('हल्की बूंदाबांदी—रास्ते गीले, चलते समय फिसलन से बचें।');
-    items.push('फोल्डेबल छाता');
+    plan.push(hi ? 'हल्की बूंदाबांदी—रास्ते गीले, चलते समय फिसलन से बचें।' : 'Light drizzle — paths stay damp, so watch your footing.');
+    items.push(hi ? 'फोल्डेबल छाता' : 'Foldable umbrella');
   }
-  if (isThunder) risk.push('बिजली-गरज की स्थिति—पेड़ों और ऊँची जगहों से दूर रहें, सीढ़ियाँ न चढ़ें; खुले स्थानों पर न जाएँ।');
-  if (isHeavyRain) risk.push('बारिश अधिक है—निचले/भीड़ वाले इलाकों से दूर रहें; फिसलन से बचें और स्थल के वर्तमान निर्देश देखें।');
-  if (isFog) risk.push('कोहरा—दृश्यता कम; ऊपरी मंच से नगर/नदी का दृश्य स्पष्ट नहीं रहेगा, सावधानी रखें।');
+  if (isThunder) risk.push(hi ? 'बिजली-गरज की स्थिति—पेड़ों और ऊँची जगहों से दूर रहें, सीढ़ियाँ न चढ़ें; खुले स्थानों पर न जाएँ।' : 'Thunder and lightning — stay away from trees and high points, do not use the stairs, and avoid open ground.');
+  if (isHeavyRain) risk.push(hi ? 'बारिश अधिक है—निचले/भीड़ वाले इलाकों से दूर रहें; फिसलन से बचें और स्थल के वर्तमान निर्देश देखें।' : 'Heavy rain — avoid low-lying and crowded areas, watch for slippery surfaces and follow the site’s current instructions.');
+  if (isFog) risk.push(hi ? 'कोहरा—दृश्यता कम; ऊपरी मंच से नगर/नदी का दृश्य स्पष्ट नहीं रहेगा, सावधानी रखें।' : 'Fog — low visibility; the city and river view from any upper level will be unclear, so take care.');
 
   // गर्मी व UV
   if (tempHigh >= 32) {
-    outfit.push('तापमान अधिक—हल्के, साँस लेने वाले कपड़े पहनें।');
-    plan.push('दोपहर की चरम गर्मी से बचें, खुले में समय कम रखें।');
-    items.push('सनस्क्रीन, पर्याप्त पानी, टोपी');
+    outfit.push(hi ? 'तापमान अधिक—हल्के, साँस लेने वाले कपड़े पहनें।' : 'High temperature — wear light, breathable clothing.');
+    plan.push(hi ? 'दोपहर की चरम गर्मी से बचें, खुले में समय कम रखें।' : 'Avoid the peak midday heat and keep time in the open short.');
+    items.push(hi ? 'सनस्क्रीन, पर्याप्त पानी, टोपी' : 'Sunscreen, plenty of water, a hat');
   }
   if (uv >= 5) {
-    outfit.push('UV प्रबल—ढ़का हुआ व हल्का कपड़ा बेहतर।');
-    items.push('सनस्क्रीन, धूप का चश्मा, टोपी');
+    outfit.push(hi ? 'UV प्रबल—ढ़का हुआ व हल्का कपड़ा बेहतर।' : 'Strong UV — covered, light clothing is better.');
+    items.push(hi ? 'सनस्क्रीन, धूप का चश्मा, टोपी' : 'Sunscreen, sunglasses, a hat');
   }
   if (tempHigh <= 10) {
-    outfit.push('ठंड अधिक—गर्म जैकेट/स्वेटर पहनें।');
-    items.push('जैकेट / स्वेटर');
+    outfit.push(hi ? 'ठंड अधिक—गर्म जैकेट/स्वेटर पहनें।' : 'Cold — wear a warm jacket or sweater.');
+    items.push(hi ? 'जैकेट / स्वेटर' : 'Jacket / sweater');
   }
-  if (delta > 8) outfit.push('दिन-रात का तापमान अंतर बड़ा—एक जैकेट/शॉल रखें ताकि कपड़े बदल सकें।');
+  if (delta > 8) outfit.push(hi ? 'दिन-रात का तापमान अंतर बड़ा—एक जैकेट/शॉल रखें ताकि कपड़े बदल सकें।' : 'A big day-to-night temperature gap — carry a jacket or shawl so you can layer up.');
 
   // हवा
   if (bf >= 7) {
-    risk.push('तेज़ हवा (' + bf + ' स्केल)—ऊँची जगहों व साइनबोर्ड से दूर रहें; खुले ऊपरी हिस्से में सावधानी।');
+    risk.push(hi ? 'तेज़ हवा (' + bf + ' स्केल)—ऊँची जगहों व साइनबोर्ड से दूर रहें; खुले ऊपरी हिस्से में सावधानी।' : 'Strong wind (Beaufort ' + bf + ') — keep away from high points and signage, and take care in exposed upper areas.');
   } else if (bf >= 5) {
-    plan.push('हवा तेज़ चल रही है—ऊपरी सीढ़ियों पर पकड़ बनाए रखें।');
-    items.push('टोपी (हवा में उड़ सकती है)');
+    plan.push(hi ? 'हवा तेज़ चल रही है—ऊपरी सीढ़ियों पर पकड़ बनाए रखें।' : 'The wind is picking up — keep a firm hold on any upper stairways.');
+    items.push(hi ? 'टोपी (हवा में उड़ सकती है)' : 'A hat that will not blow away');
   }
 
   // साफ / बादल (फ़ॉलबैक)
   if ((isClear || isCloud) && outfit.length === 0 && plan.length === 0) {
-    plan.push(isClear
-      ? 'मौसम साफ—घूमने के लिए बढ़िया; सुबह/शाम का प्रकाश फोटो के लिए उत्कृष्ट।'
-      : 'रौशनी नरम है—फोटोग्राफी के लिए अच्छा।');
+    plan.push(hi
+      ? (isClear ? 'मौसम साफ—घूमने के लिए बढ़िया; सुबह/शाम का प्रकाश फोटो के लिए उत्कृष्ट।' : 'रौशनी नरम है—फोटोग्राफी के लिए अच्छा।')
+      : (isClear ? 'Clear weather — good for walking, and morning or evening light is excellent for photos.' : 'Soft light — good for photography.'));
   }
 
-  if (outfit.length === 0) outfit.push('मौसम सामान्य—आरामदायक कपड़े पहनें।');
-  if (plan.length === 0) plan.push('वास्तविक स्थिति और स्थानीय निर्देश देखकर घूमने की योजना बनाएँ।');
-  if (items.length === 0) items.push('पानी की बोतल रखना अच्छा रहेगा।');
+  if (outfit.length === 0) outfit.push(hi ? 'मौसम सामान्य—आरामदायक कपड़े पहनें।' : 'Mild weather — comfortable clothing is fine.');
+  if (plan.length === 0) plan.push(hi ? 'वास्तविक स्थिति और स्थानीय निर्देश देखकर घूमने की योजना बनाएँ।' : 'Plan your visit around the actual conditions and local instructions.');
+  if (items.length === 0) items.push(hi ? 'पानी की बोतल रखना अच्छा रहेगा।' : 'A water bottle is a good idea.');
 
   return { outfit, plan, items, risk };
 };
@@ -176,19 +217,20 @@ const adviceCol = (title: string, list: string[]): string =>
     list.map((i) => '<li class="flex gap-2"><span aria-hidden="true">✓</span><span>' + i + '</span></li>').join('') +
     '</ul></div>';
 
-export const renderAdvice = (a: { outfit: string[]; plan: string[]; items: string[]; risk: string[] }): string => {
+export const renderAdvice = (a: { outfit: string[]; plan: string[]; items: string[]; risk: string[] }, locale: Locale = 'hi'): string => {
+  const hi = locale === 'hi';
   let html = '';
   if (a.risk && a.risk.length) {
     html += '<div class="rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-800">' +
-      '<p class="font-black">⚠️ सुरक्षा सावधानी</p>' +
+      '<p class="font-black">' + (hi ? '⚠️ सुरक्षा सावधानी' : '⚠️ Safety caution') + '</p>' +
       '<ul class="mt-2 space-y-1.5">' +
       a.risk.map((r) => '<li class="flex gap-2"><span aria-hidden="true">⚠️</span><span>' + r + '</span></li>').join('') +
       '</ul></div>';
   }
   html += '<div class="mt-3 grid gap-3 sm:grid-cols-3">' +
-    adviceCol('👕 यात्रा पहनावा', a.outfit) +
-    adviceCol('🗺️ घूमने की योजना', a.plan) +
-    adviceCol('🎒 साथ रखें', a.items) +
+    adviceCol(hi ? '👕 यात्रा पहनावा' : '👕 What to wear', a.outfit) +
+    adviceCol(hi ? '🗺️ घूमने की योजना' : '🗺️ How to plan', a.plan) +
+    adviceCol(hi ? '🎒 साथ रखें' : '🎒 Carry with you', a.items) +
     '</div>';
   return html;
 };

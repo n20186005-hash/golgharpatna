@@ -1,0 +1,12 @@
+---
+import Guide from '../../layouts/Guide.astro';
+import type { GuideEntry } from '../../content/guide-schema';
+import { ALL_ENTRIES } from '../../content/guides/routes';
+
+export function getStaticPaths() {
+  return ALL_ENTRIES.map((entry) => ({ params: { path: entry.path }, props: { entry } }));
+}
+
+const { entry } = Astro.props as { entry: GuideEntry };
+---
+<Guide {entry} locale="en" />

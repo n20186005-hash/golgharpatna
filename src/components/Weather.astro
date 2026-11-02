@@ -1,45 +1,87 @@
 ---
 import {validateWeather,weatherUrl,nowHtml,daysHtml,buildAdvice,renderAdvice} from '../lib/weather';
+import type { Locale } from '../content/guide-schema';
+const { locale = 'hi' } = Astro.props as { locale: Locale };
 let wx:any=null;
 const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
 try{const response=await fetch(weatherUrl,{signal:controller.signal});if(response.ok)wx=validateWeather(await response.json());}catch{wx=null;}finally{clearTimeout(timer);}
+
+const C =
+  locale === 'hi'
+    ? {
+        eyebrow: 'मौसम और योजना',
+        heading: 'प्रदाता का मौसम और 7 दिन का पूर्वानुमान',
+        bestTitle: 'घूमने का सबसे अच्छा समय',
+        bestText: 'अक्टूबर–मार्च सबसे सुहाना मौसम; सितंबर–अप्रैल आरामदायक। सर्दियों की सुबह कोहरा संभव है।',
+        summerTitle: 'गर्मी (मार्च–जून)',
+        summerText: 'दिन बहुत गर्म हो सकते हैं। सुबह जल्दी या देर दोपहर में जाएँ; पानी साथ रखें।',
+        monsoonTitle: 'मानसून (जुलाई–सितंबर)',
+        monsoonText: 'बारिश के कारण सीढ़ियाँ फिसलन भरी हो सकती हैं; छाता रखें और पूर्वानुमान देखें।',
+        today: 'आज का मौसम',
+        nextDays: 'आगामी 7 दिन',
+        unavailable: 'मौसम की जानकारी अभी उपलब्ध नहीं है।',
+        status: 'निर्माण के समय प्राप्त पूर्वानुमान; ब्राउज़र नवीनतम जानकारी लेने की कोशिश करता है। स्रोत: ',
+        statusTail: '। यह पूर्वानुमान है; वास्तविक स्थिति भिन्न हो सकती है—घूमने से पहले नवीनतम स्थिति की पुष्टि करें।',
+        cached: 'हाल का स्थानीय कैश · प्रदाता का समय ऊपर दिया है। यह पूर्वानुमान है, स्थल की पहुँच की सूचना नहीं।',
+        fetched: 'Open-Meteo से पूर्वानुमान प्राप्त हुआ। यह स्थल पर माप या प्रवेश की पुष्टि नहीं है।',
+        snapshot: 'नया पूर्वानुमान प्राप्त नहीं हुआ। हाल का निर्माण-समय स्नैपशॉट दिख रहा है; प्रदाता का समय देखें।',
+        failed: 'नवीनतम पूर्वानुमान नहीं मिला। जानकारी फिर लेने के लिए पृष्ठ पुनः लोड करें; स्थानीय मौसम और स्थल के निर्देश देखें।'
+      }
+    : {
+        eyebrow: 'Weather and planning',
+        heading: 'Provider weather and 7-day forecast',
+        bestTitle: 'Best time to visit',
+        bestText: 'October to March is the most comfortable weather; September to April is pleasant. Winter mornings can be foggy.',
+        summerTitle: 'Summer (March–June)',
+        summerText: 'Days can be very hot. Go early in the morning or late in the afternoon, and carry water.',
+        monsoonTitle: 'Monsoon (July–September)',
+        monsoonText: 'Rain can make the steps slippery; carry an umbrella and check the forecast.',
+        today: 'Weather today',
+        nextDays: 'Next 7 days',
+        unavailable: 'Weather information is not available right now.',
+        status: 'Forecast taken at build time; your browser tries to fetch the latest. Source: ',
+        statusTail: '. This is a forecast, not a measurement; conditions can differ — confirm the latest situation before you travel.',
+        cached: 'Recent local cache · the provider time is shown above. This is a forecast, not information about access to the site.',
+        fetched: 'Forecast received from Open-Meteo. This does not confirm conditions or entry at the site.',
+        snapshot: 'A fresh forecast could not be fetched. Showing the recent build-time snapshot; check the provider time.',
+        failed: 'The latest forecast is unavailable. Reload the page to try again, and check local weather and the site’s instructions.'
+      };
 ---
-
-
-<section id="मौसम" class="section">
+<section id={locale === 'hi' ? 'मौसम' : 'weather'} class="section">
   <div class="shell">
-    <p class="eyebrow">मौसम और योजना</p>
-    <h2 class="section-title mt-3">प्रदाता का मौसम और 7 दिन का पूर्वानुमान</h2>
+    <p class="eyebrow">{C.eyebrow}</p>
+    <h2 class="section-title mt-3">{C.heading}</h2>
 
     <!-- स्थिर (हमेशा दिखने वाला) सलाह-भाग -->
     <div class="mt-5 grid gap-4 md:grid-cols-3">
       <div class="card p-5">
-        <h3 class="font-black">घूमने का सबसे अच्छा समय</h3>
-        <p class="mt-2 text-sm muted">अक्टूबर–मार्च सबसे सुहाना मौसम; सितंबर–अप्रैल आरामदायक। सर्दियों की सुबह कोहरा संभव है।</p>
+        <h3 class="font-black">{C.bestTitle}</h3>
+        <p class="mt-2 text-sm muted">{C.bestText}</p>
       </div>
       <div class="card p-5">
-        <h3 class="font-black">गर्मी (मार्च–जून)</h3>
-        <p class="mt-2 text-sm muted">दिन बहुत गर्म हो सकते हैं। सुबह जल्दी या देर दोपहर में जाएँ; पानी साथ रखें।</p>
+        <h3 class="font-black">{C.summerTitle}</h3>
+        <p class="mt-2 text-sm muted">{C.summerText}</p>
       </div>
       <div class="card p-5">
-        <h3 class="font-black">मानसून (जुलाई–सितंबर)</h3>
-        <p class="mt-2 text-sm muted">बारिश के कारण सीढ़ियाँ फिसलन भरी हो सकती हैं; छाता रखें और पूर्वानुमान देखें।</p>
+        <h3 class="font-black">{C.monsoonTitle}</h3>
+        <p class="mt-2 text-sm muted">{C.monsoonText}</p>
       </div>
     </div>
 
     <!-- गतिशील भाग (सर्वर से प्राप्त + क्लाइंट रिफ्रेश) -->
-    <div id="weather-root" data-weather-snapshot={JSON.stringify(wx)} class="mt-6 grid gap-5 lg:grid-cols-[.9fr_1.1fr]">
+    <div id="weather-root" data-locale={locale} data-weather-snapshot={JSON.stringify(wx)} class="mt-6 grid gap-5 lg:grid-cols-[.9fr_1.1fr]">
       <div class="card p-7">
-        <p class="text-sm font-black text-stone-500">आज का मौसम</p>
-        <div id="wx-now" class="mt-2 rounded-2xl bg-[#f5efe5] p-6 text-sm muted" set:html={wx ? nowHtml(wx) : 'मौसम की जानकारी अभी उपलब्ध नहीं है।'}></div>
-        <div id="wx-advice" class="mt-3 space-y-3" set:html={wx ? renderAdvice(buildAdvice(wx)) : ''}></div>
+        <p class="text-sm font-black text-stone-500">{C.today}</p>
+        <div id="wx-now" class="mt-2 rounded-2xl bg-[#f5efe5] p-6 text-sm muted" set:html={wx ? nowHtml(wx, locale) : C.unavailable}></div>
+        <div id="wx-advice" class="mt-3 space-y-3" set:html={wx ? renderAdvice(buildAdvice(wx, locale), locale) : ''}></div>
       </div>
       <div class="card p-7">
-        <p class="text-sm font-black text-stone-500">आगामी 7 दिन</p>
-        <div id="wx-days" class="mt-2 rounded-2xl bg-[#f5efe5] p-4 text-sm muted" set:html={wx ? daysHtml(wx) : 'मौसम की जानकारी अभी उपलब्ध नहीं है।'}></div>
+        <p class="text-sm font-black text-stone-500">{C.nextDays}</p>
+        <div id="wx-days" class="mt-2 rounded-2xl bg-[#f5efe5] p-4 text-sm muted" set:html={wx ? daysHtml(wx, locale) : C.unavailable}></div>
       </div>
     </div>
-    <p id="wx-status" class="mt-4 text-xs text-stone-500">निर्माण के समय प्राप्त पूर्वानुमान; ब्राउज़र नवीनतम जानकारी लेने की कोशिश करता है। स्रोत: <a class="underline" href="https://open-meteo.com/">Open-Meteo</a>। यह पूर्वानुमान है; वास्तविक स्थिति भिन्न हो सकती है—घूमने से पहले नवीनतम स्थिति की पुष्टि करें।</p>
+    <p id="wx-status" class="mt-4 text-xs font-bold text-stone-600" role="status" aria-live="polite"></p>
+    <p class="mt-1 text-xs text-stone-500">{C.status}<a class="underline" href="https://open-meteo.com/">Open-Meteo</a>{C.statusTail}</p>
   </div>
 </section>
 
@@ -47,13 +89,15 @@ try{const response=await fetch(weatherUrl,{signal:controller.signal});if(respons
 import {validateWeather,weatherUrl,nowHtml,daysHtml,buildAdvice,renderAdvice} from '../lib/weather';
 const KEY='golghar-weather-v2',TTL=30*60*1000;
 const root=document.getElementById('weather-root'),nowBox=document.getElementById('wx-now'),daysBox=document.getElementById('wx-days'),adviceBox=document.getElementById('wx-advice'),status=document.getElementById('wx-status');
-const render=(d:any)=>{if(nowBox)nowBox.innerHTML=nowHtml(d);if(daysBox)daysBox.innerHTML=daysHtml(d);if(adviceBox)adviceBox.innerHTML=renderAdvice(buildAdvice(d));};
+const locale:'hi'|'en'=root?.dataset.locale==='en'?'en':'hi';
+const M={hi:{cached:'हाल का स्थानीय कैश · प्रदाता का समय ऊपर दिया है। यह पूर्वानुमान है, स्थल की पहुँच की सूचना नहीं।',fetched:'Open-Meteo से पूर्वानुमान प्राप्त हुआ। यह स्थल पर माप या प्रवेश की पुष्टि नहीं है।',snapshot:'नया पूर्वानुमान प्राप्त नहीं हुआ। हाल का निर्माण-समय स्नैपशॉट दिख रहा है; प्रदाता का समय देखें।',failed:'नवीनतम पूर्वानुमान नहीं मिला। जानकारी फिर लेने के लिए पृष्ठ पुनः लोड करें; स्थानीय मौसम और स्थल के निर्देश देखें।',unavailable:'मौसम की जानकारी अभी उपलब्ध नहीं है।'},en:{cached:'Recent local cache · the provider time is shown above. This is a forecast, not information about access to the site.',fetched:'Forecast received from Open-Meteo. This does not confirm conditions or entry at the site.',snapshot:'A fresh forecast could not be fetched. Showing the recent build-time snapshot; check the provider time.',failed:'The latest forecast is unavailable. Reload the page to try again, and check local weather and the site’s instructions.',unavailable:'Weather information is not available right now.'}}[locale];
+const render=(d:any)=>{if(nowBox)nowBox.innerHTML=nowHtml(d,locale);if(daysBox)daysBox.innerHTML=daysHtml(d,locale);if(adviceBox)adviceBox.innerHTML=renderAdvice(buildAdvice(d,locale),locale);};
 const message=(text:string)=>{if(status)status.textContent=text;};
 async function refresh(){
- try{const cached=JSON.parse(localStorage.getItem(KEY)||'null'),age=Date.now()-cached?.t;if(cached&&typeof cached.t==='number'&&Number.isFinite(age)&&age>=0&&age<TTL){render(validateWeather(cached.data));message('हाल का स्थानीय कैश · प्रदाता का समय ऊपर दिया है। यह पूर्वानुमान है, स्थल की पहुँच की सूचना नहीं।');return;}}catch{}
+ try{const cached=JSON.parse(localStorage.getItem(KEY)||'null'),age=Date.now()-cached?.t;if(cached&&typeof cached.t==='number'&&Number.isFinite(age)&&age>=0&&age<TTL){render(validateWeather(cached.data));message(M.cached);return;}}catch{}
  const ctrl=new AbortController(),timer=window.setTimeout(()=>ctrl.abort(),15000);
- try{const res=await fetch(weatherUrl,{signal:ctrl.signal});if(!res.ok)throw Error('Weather HTTP');const data=validateWeather(await res.json());try{localStorage.setItem(KEY,JSON.stringify({t:Date.now(),data}));}catch{}render(data);message('Open-Meteo से पूर्वानुमान प्राप्त हुआ। यह स्थल पर माप या प्रवेश की पुष्टि नहीं है।');}
- catch{try{const snapshot=validateWeather(JSON.parse(root?.dataset.weatherSnapshot||'null'));render(snapshot);message('नया पूर्वानुमान प्राप्त नहीं हुआ। हाल का निर्माण-समय स्नैपशॉट दिख रहा है; प्रदाता का समय देखें।');}catch{if(nowBox)nowBox.textContent='मौसम की जानकारी अभी उपलब्ध नहीं है।';if(daysBox)daysBox.innerHTML='';if(adviceBox)adviceBox.innerHTML='';message('नवीनतम पूर्वानुमान नहीं मिला। जानकारी फिर लेने के लिए पृष्ठ पुनः लोड करें; स्थानीय मौसम और स्थल के निर्देश देखें।');}}
+ try{const res=await fetch(weatherUrl,{signal:ctrl.signal});if(!res.ok)throw Error('Weather HTTP');const data=validateWeather(await res.json());try{localStorage.setItem(KEY,JSON.stringify({t:Date.now(),data}));}catch{}render(data);message(M.fetched);}
+ catch{try{const snapshot=validateWeather(JSON.parse(root?.dataset.weatherSnapshot||'null'));render(snapshot);message(M.snapshot);}catch{if(nowBox)nowBox.textContent=M.unavailable;if(daysBox)daysBox.innerHTML='';if(adviceBox)adviceBox.innerHTML='';message(M.failed);}}
  finally{window.clearTimeout(timer);}
 }
 refresh();

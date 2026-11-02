@@ -6,6 +6,20 @@
 
 .hero-light{background:#fff;color:var(--ink)}
 
+/* Guide pages */
+.note{border-left:4px solid var(--clay);background:rgba(143,78,54,.07);border-radius:0 1rem 1rem 0;padding:1rem 1.2rem;color:#5b463c}
+.data-table{width:100%;border-collapse:collapse;font-size:.98rem;background:rgba(255,250,242,.9);border:1px solid rgba(76,52,39,.13);border-radius:1rem;overflow:hidden;min-width:34rem}
+.data-table th,.data-table td{padding:.75rem .9rem;text-align:left;vertical-align:top;border-bottom:1px solid rgba(76,52,39,.12)}
+.data-table th{background:rgba(35,109,114,.08);font-weight:800}
+.data-table tr:last-child td{border-bottom:0}
+.link-card{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1.1rem;border-radius:1.1rem;background:rgba(255,250,242,.9);border:1px solid rgba(76,52,39,.13);font-weight:700;text-decoration:none}
+.link-card:hover{border-color:var(--clay);color:var(--clay)}
+.crumb{display:flex;flex-wrap:wrap;gap:.4rem;font-size:.82rem;color:#75706a}
+.crumb a{text-decoration:underline}
+.faq-list summary{cursor:pointer;font-weight:800}
+.faq-list summary::marker{color:var(--clay)}
+.lang-switch{border:1px solid rgba(76,52,39,.25);border-radius:999px;padding:.45rem .85rem;font-size:.82rem;font-weight:800;text-decoration:none;white-space:nowrap}
+
 /* Keep the weather grid inside its column and let forecast details wrap. */
 #weather-root{min-width:0;grid-template-columns:minmax(0,1fr);overflow-wrap:anywhere}
 #weather-root > .card,#wx-now,#wx-days,#wx-advice{min-width:0}

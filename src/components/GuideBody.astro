@@ -1,0 +1,80 @@
+---
+import type { Block, Locale } from '../content/guide-schema';
+import { MAP_EMBED, MAP_URL, urlFor } from '../lib/site';
+
+const { blocks, locale } = Astro.props as { blocks: Block[]; locale: Locale };
+const mapLabel = locale === 'hi' ? 'गोलघर पटना का मानचित्र' : 'Map of Golghar, Patna';
+const mapCta = locale === 'hi' ? 'Google Maps में खोलें' : 'Open in Google Maps';
+---
+
+{
+  blocks.map((b) =>
+    b.t === 'h2' ? (
+      <h2 class="mt-12 text-[clamp(1.6rem,3.4vw,2.4rem)] font-black leading-tight tracking-[-.02em]">{b.text}</h2>
+    ) : b.t === 'h3' ? (
+      <h3 class="mt-8 text-xl font-black">{b.text}</h3>
+    ) : b.t === 'p' ? (
+      <p class="mt-5 text-lg text-stone-700">{b.text}</p>
+    ) : b.t === 'note' ? (
+      <p class="note mt-6">{b.text}</p>
+    ) : b.t === 'ul' ? (
+      <ul class="mt-5 space-y-2 text-lg text-stone-700">
+        {b.items.map((item) => (
+          <li class="flex gap-3">
+            <span aria-hidden="true" class="text-[#8f4e36]">
+              •
+            </span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    ) : b.t === 'ol' ? (
+      <ol class="mt-5 list-decimal space-y-2 pl-6 text-lg text-stone-700">
+        {b.items.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ol>
+    ) : b.t === 'table' ? (
+      <div class="mt-6 overflow-x-auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              {b.head.map((cell) => (
+                <th scope="col">{cell}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {b.rows.map((row) => (
+              <tr>
+                {row.map((cell) => (
+                  <td>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : b.t === 'links' ? (
+      <ul class="mt-6 grid gap-3 sm:grid-cols-2">
+        {b.items.map((item) => (
+          <li>
+            <a class="link-card" href={urlFor(locale, item.path)}>
+              <span>{item.label}</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : b.t === 'map' ? (
+      <figure class="mt-6">
+        <iframe class="map-frame" title={mapLabel} src={MAP_EMBED} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <figcaption class="mt-3 text-sm">
+          <a class="underline" href={MAP_URL} target="_blank" rel="noopener noreferrer">
+            {mapCta}
+          </a>
+        </figcaption>
+      </figure>
+    ) : null
+  )
+}
