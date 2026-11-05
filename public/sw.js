@@ -1,9 +1,9 @@
 /* गोलघर पटना – Service Worker (v2026-10-23) */
-const CACHE = 'golghar-patna-v2026-10-23';
+const CACHE = 'golghar-patna-v2026-11-05';
 const PRECACHE = [
   '/',
   '/manifest.webmanifest',
-  '/images/golghar-hero.svg',
+  '/images/golghar-hero.jpg',
   '/favicon/favicon.svg',
   '/favicon/apple-touch-icon.png'
 ];

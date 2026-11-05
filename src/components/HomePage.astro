@@ -431,7 +431,7 @@ const schema: any[] = [
 <Base title={C.title} description={C.description} lang={locale} altPath="" {schema}>
   <section class="relative overflow-hidden bg-[#201f1a] text-white">
     <div class="absolute inset-0 opacity-45">
-      <img class="photo" src="/images/golghar-hero.svg" alt={C.imageAlt} width="1200" height="800" fetchpriority="high" />
+      <img class="photo" src="/images/golghar-hero.jpg" alt={C.imageAlt} width="1200" height="800" fetchpriority="high" />
     </div>
     <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent"></div>
     <div class="shell relative grid min-h-[640px] items-end gap-10 py-20 lg:grid-cols-[1.1fr_.8fr]">
@@ -558,15 +558,15 @@ const schema: any[] = [
         </article>
         <figure class="card overflow-hidden">
           <img
-            src={'/images/golghar-' + (i % 2 ? 'stairs' : 'wide') + '.svg'}
-            alt={locale === 'hi' ? 'गोलघर की आकृति का मूल वैचारिक चित्र, फोटो नहीं' : 'Illustrative drawing of Golghar, not a photograph'}
+            src={'/images/golghar-' + (i % 2 ? 'stairs' : 'wide') + '.jpg'}
+            alt={locale === 'hi' ? 'पटना में गोलघर का वास्तविक दृश्य' : 'Photograph of Golghar in Patna'}
             width="1200"
             height="800"
             loading="lazy"
             class="w-full"
           />
           <figcaption class="p-4 text-xs muted">
-            {locale === 'hi' ? 'मूल सांकेतिक चित्र; वास्तु का सटीक मापचित्र या वर्तमान दृश्य नहीं।' : 'Original illustrative drawing; not a precise plan or a current view.'}
+            {locale === 'hi' ? 'पटना में गोलघर का वास्तविक फोटो।' : 'Photograph of Golghar in Patna.'}
           </figcaption>
         </figure>
       </div>

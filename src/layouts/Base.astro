@@ -10,7 +10,7 @@ const {
   description,
   lang = 'hi',
   altPath,
-  image = '/images/golghar-hero.svg',
+  image = '/images/golghar-hero.jpg',
   imageAlt,
   robots = 'index,follow',
   schema = []
@@ -20,7 +20,7 @@ const locale = lang as Locale;
 const site = Astro.site;
 const canonical = site ? new URL(Astro.url.pathname, site).toString() : undefined;
 const ogImage = site ? new URL(image, site).toString() : undefined;
-const altText = imageAlt ?? (locale === 'hi' ? 'गोलघर का वैचारिक रेखाचित्र, वास्तविक फोटो नहीं' : 'Illustrative drawing of Golghar, not a photograph');
+const altText = imageAlt ?? (locale === 'hi' ? 'पटना में गोलघर का वास्तविक फोटो' : 'Photograph of Golghar in Patna');
 const skipLabel = locale === 'hi' ? 'मुख्य सामग्री पर जाएँ' : 'Skip to main content';
 const hasAlternates = typeof altPath === 'string';
 const hiUrl = hasAlternates ? absoluteUrl('hi', altPath) : undefined;
